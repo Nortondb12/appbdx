@@ -12,8 +12,76 @@ serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json();
+    const { url, download, videoId, format } = await req.json();
 
+    const apiToken = Deno.env.get("FASTSAVER_API_KEY");
+    
+    if (!apiToken) {
+      console.error("FASTSAVER_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ status: false, error: "Server configuration error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Handle download request - proxy to FastSaverAPI
+    if (download && videoId && format) {
+      console.log("Processing download request for:", videoId, format);
+      
+      const downloadUrl = `https://fastsaverapi.com/download?video_id=${videoId}&format=${format}&token=${apiToken}`;
+      
+      try {
+        // Call the download endpoint and follow redirects to get final URL
+        const downloadResponse = await fetch(downloadUrl, {
+          method: "GET",
+          redirect: "follow",
+        });
+        
+        // Check if we got a video file or redirect
+        const finalUrl = downloadResponse.url;
+        const contentType = downloadResponse.headers.get("content-type") || "";
+        
+        console.log("Download response URL:", finalUrl);
+        console.log("Content-Type:", contentType);
+        
+        // If the response is video content, return the final URL
+        if (contentType.includes("video") || contentType.includes("audio") || finalUrl !== downloadUrl) {
+          return new Response(
+            JSON.stringify({ status: true, downloadUrl: finalUrl }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        // Try to parse as JSON error
+        const responseText = await downloadResponse.text();
+        console.log("Download response text:", responseText.substring(0, 200));
+        
+        try {
+          const jsonResponse = JSON.parse(responseText);
+          if (jsonResponse.url) {
+            return new Response(
+              JSON.stringify({ status: true, downloadUrl: jsonResponse.url }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        } catch {
+          // Not JSON, might be an error page
+        }
+        
+        return new Response(
+          JSON.stringify({ status: false, error: "Failed to get download URL" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (downloadError) {
+        console.error("Download error:", downloadError);
+        return new Response(
+          JSON.stringify({ status: false, error: "Download failed" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Regular video info fetch
     if (!url) {
       return new Response(
         JSON.stringify({ status: false, error: "Video URL is required" }),
@@ -28,16 +96,6 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ status: false, error: "Invalid URL format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const apiToken = Deno.env.get("FASTSAVER_API_KEY");
-    
-    if (!apiToken) {
-      console.error("FASTSAVER_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ status: false, error: "Server configuration error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -89,17 +147,18 @@ serve(async (req) => {
     let media = transformMediaLinks(data);
     
     // For YouTube videos, FastSaverAPI requires /download endpoint
+    // We store videoId instead of full URL to keep API token secure
     if (data.hosting === "youtube" && data.shortcode && media.length === 0) {
       const qualities = ["1080p", "720p", "480p", "360p"];
       media = qualities.map(quality => ({
-        url: `https://fastsaverapi.com/download?video_id=${data.shortcode}&format=${quality}&token=${apiToken}`,
+        videoId: data.shortcode,
         quality: quality,
         format: "video"
       }));
       
       // Add audio option
       media.push({
-        url: `https://fastsaverapi.com/download?video_id=${data.shortcode}&format=mp3&token=${apiToken}`,
+        videoId: data.shortcode,
         quality: "Audio (MP3)",
         format: "mp3"
       });
@@ -133,8 +192,8 @@ serve(async (req) => {
 });
 
 // Transform various API response formats to our unified media format
-function transformMediaLinks(data: any): Array<{ url: string; quality?: string; format?: string }> {
-  const media: Array<{ url: string; quality?: string; format?: string }> = [];
+function transformMediaLinks(data: any): Array<{ url?: string; videoId?: string; quality?: string; format?: string }> {
+  const media: Array<{ url?: string; videoId?: string; quality?: string; format?: string }> = [];
 
   // Handle different response structures from FastSaverAPI
   if (data.medias && Array.isArray(data.medias)) {

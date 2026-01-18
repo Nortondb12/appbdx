@@ -1,7 +1,8 @@
 export type Platform = 'facebook' | 'instagram' | 'youtube' | 'tiktok' | 'unknown';
 
 export interface VideoMedia {
-  url: string;
+  url?: string;
+  videoId?: string;
   quality?: string;
   format?: string;
   size?: string;
