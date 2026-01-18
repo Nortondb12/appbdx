@@ -82,45 +82,61 @@ serve(async (req) => {
               }
             }
           } else {
-            // For video downloads, first check adaptiveFormats for higher quality
-            if (rapidData.adaptiveFormats && Array.isArray(rapidData.adaptiveFormats)) {
-              // Filter to video-only formats
-              const videoFormats = rapidData.adaptiveFormats.filter((f: any) => 
+            // For video downloads, FIRST check formats array (combined video+audio)
+            // This ensures downloaded videos have sound
+            if (rapidData.formats && Array.isArray(rapidData.formats)) {
+              // Filter to video formats with audio (combined streams)
+              const combinedFormats = rapidData.formats.filter((f: any) => 
                 f.mimeType?.includes("video/")
               );
               
-              // Try exact quality match first (e.g., "1080" matches "1080p" or "1080p60")
-              const exactMatch = videoFormats.find((f: any) => 
+              // Try exact quality match first
+              const exactMatch = combinedFormats.find((f: any) => 
                 f.qualityLabel?.startsWith(requestedQuality + "p")
               );
               
               if (exactMatch) {
                 downloadUrl = exactMatch.url;
                 selectedQuality = exactMatch.qualityLabel;
-                console.log("Found exact match in adaptiveFormats:", selectedQuality);
+                console.log("Found combined video+audio format:", selectedQuality);
+              } else if (combinedFormats.length > 0) {
+                // No exact match - get highest quality available with audio
+                combinedFormats.sort((a: any, b: any) => {
+                  const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
+                  const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
+                  return qualityB - qualityA;
+                });
+                downloadUrl = combinedFormats[0].url;
+                selectedQuality = combinedFormats[0].qualityLabel;
+                console.log("Using best combined video+audio format:", selectedQuality);
+              }
+            }
+            
+            // Only fallback to adaptiveFormats (video-only, no audio) if no combined format found
+            // Note: These are video-only streams - user should be warned about no audio
+            if (!downloadUrl && rapidData.adaptiveFormats && Array.isArray(rapidData.adaptiveFormats)) {
+              console.log("Warning: No combined video+audio format found, using video-only stream (no audio)");
+              const videoFormats = rapidData.adaptiveFormats.filter((f: any) => 
+                f.mimeType?.includes("video/")
+              );
+              
+              const exactMatch = videoFormats.find((f: any) => 
+                f.qualityLabel?.startsWith(requestedQuality + "p")
+              );
+              
+              if (exactMatch) {
+                downloadUrl = exactMatch.url;
+                selectedQuality = exactMatch.qualityLabel + " (no audio)";
+                console.log("Found video-only in adaptiveFormats:", selectedQuality);
               } else if (videoFormats.length > 0) {
-                // No exact match - get highest quality available
                 videoFormats.sort((a: any, b: any) => {
                   const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
                   const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
                   return qualityB - qualityA;
                 });
                 downloadUrl = videoFormats[0].url;
-                selectedQuality = videoFormats[0].qualityLabel;
-                console.log("Using best available from adaptiveFormats:", selectedQuality);
-              }
-            }
-            
-            // Fallback to formats array (combined video+audio, lower quality)
-            if (!downloadUrl && rapidData.formats && Array.isArray(rapidData.formats)) {
-              const videoFormat = rapidData.formats.find((f: any) => 
-                f.mimeType?.includes("video/") && f.qualityLabel?.startsWith(requestedQuality + "p")
-              ) || rapidData.formats.find((f: any) => f.mimeType?.includes("video/"));
-              
-              if (videoFormat) {
-                downloadUrl = videoFormat.url;
-                selectedQuality = videoFormat.qualityLabel;
-                console.log("Found video in formats:", selectedQuality);
+                selectedQuality = videoFormats[0].qualityLabel + " (no audio)";
+                console.log("Using best video-only from adaptiveFormats:", selectedQuality);
               }
             }
           }
