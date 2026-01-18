@@ -54,10 +54,10 @@ serve(async (req) => {
           );
           
           const rapidData = await rapidResponse.json();
-          console.log("RapidAPI response status:", rapidData.status);
+          console.log("RapidAPI full response:", JSON.stringify(rapidData, null, 2));
           
-          if (rapidData.status === "fail") {
-            throw new Error(rapidData.msg || "Failed to get download link");
+          if (rapidData.status === "fail" || rapidData.error) {
+            throw new Error(rapidData.msg || rapidData.message || "Failed to get download link");
           }
           
           // Find the requested quality or best available
