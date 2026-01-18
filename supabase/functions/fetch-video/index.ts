@@ -20,21 +20,18 @@ serve(async (req) => {
     if (download) {
       console.log("Processing download request for:", platform, videoId, format);
 
-      // For YouTube, use Cobalt API
+      // For YouTube, use self-hosted Cobalt API
       if (platform === "youtube" && url) {
         try {
-          const cobaltResponse = await fetch("https://api.cobalt.tools/", {
+          console.log("Calling self-hosted Cobalt API for URL:", url);
+          
+          const cobaltResponse = await fetch("http://135.181.95.9:9000/api/json", {
             method: "POST",
             headers: {
               "Accept": "application/json",
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              url: url,
-              videoQuality: format === "Audio (MP3)" ? "360" : format?.replace("p", "") || "720",
-              audioFormat: "mp3",
-              downloadMode: format === "Audio (MP3)" ? "audio" : "auto",
-            }),
+            body: JSON.stringify({ url }),
           });
 
           const cobaltData = await cobaltResponse.json();
