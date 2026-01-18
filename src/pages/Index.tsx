@@ -67,11 +67,34 @@ const Index = () => {
   };
 
   const handleDownload = async (media: VideoMedia) => {
-    if (!media.url || !videoInfo) return;
+    if (!videoInfo) return;
 
     setIsDownloading(true);
 
     try {
+      let downloadUrl = media.url;
+
+      // If media has videoId (YouTube), we need to proxy through edge function
+      if (media.videoId) {
+        const { data, error: fnError } = await supabase.functions.invoke('fetch-video', {
+          body: { 
+            download: true,
+            videoId: media.videoId,
+            format: media.quality,
+          },
+        });
+
+        if (fnError || !data?.status) {
+          throw new Error(data?.error || fnError?.message || 'Failed to get download URL');
+        }
+
+        downloadUrl = data.downloadUrl;
+      }
+
+      if (!downloadUrl) {
+        throw new Error('No download URL available');
+      }
+
       // Add to history
       addToHistory({
         title: videoInfo.title,
@@ -81,7 +104,7 @@ const Index = () => {
       });
 
       // Open download in new tab
-      window.open(media.url, '_blank');
+      window.open(downloadUrl, '_blank');
       
       toast.success('Download started!', {
         description: 'Your video is being downloaded.',
@@ -96,7 +119,7 @@ const Index = () => {
     } catch (err) {
       console.error('Error downloading video:', err);
       toast.error('Download failed', {
-        description: 'Please try again.',
+        description: err instanceof Error ? err.message : 'Please try again.',
       });
     } finally {
       setIsDownloading(false);
