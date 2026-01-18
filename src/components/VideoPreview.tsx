@@ -1,9 +1,9 @@
-import { Download, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { PlatformIcon } from '@/components/PlatformIcon';
-import { VideoInfo, VideoMedia } from '@/types/video';
 import { useState } from 'react';
+import { Download, Loader2, Clock, Play } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { VideoInfo, VideoMedia } from '@/types/video';
+import { cn } from '@/lib/utils';
 
 interface VideoPreviewProps {
   video: VideoInfo;
@@ -12,94 +12,125 @@ interface VideoPreviewProps {
 }
 
 export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewProps) {
-  const [selectedQuality, setSelectedQuality] = useState<VideoMedia | null>(
+  const [selectedMedia, setSelectedMedia] = useState<VideoMedia | null>(
     video.media[0] || null
   );
-  const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const handleDownload = () => {
-    if (selectedQuality) {
-      onDownload(selectedQuality);
+    if (selectedMedia) {
+      onDownload(selectedMedia);
     }
   };
 
   return (
-    <Card className="glass-card overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <CardContent className="p-0">
-        <div className="relative aspect-video bg-muted">
+    <Card className="w-full overflow-hidden glass-card rounded-2xl animate-fade-up">
+      <div className="flex flex-col md:flex-row">
+        {/* Thumbnail */}
+        <div className="relative md:w-2/5 aspect-video md:aspect-auto overflow-hidden bg-secondary">
+          {!imageError ? (
+            <img
+              src={video.thumbnail}
+              alt={video.title}
+              className={cn(
+                "w-full h-full object-cover transition-all duration-500",
+                imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-105"
+              )}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center min-h-[200px]">
+              <Play className="w-12 h-12 text-muted-foreground" />
+            </div>
+          )}
+          
           {/* Loading skeleton */}
           {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 animate-pulse bg-muted" />
+            <div className="absolute inset-0 bg-secondary animate-pulse" />
           )}
-          <img
-            src={imageError ? '/placeholder.svg' : video.thumbnail}
-            alt={video.title}
-            className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageError(true);
-              setImageLoaded(true);
-            }}
-            crossOrigin="anonymous"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute top-3 left-3">
-            <div className="bg-background/80 backdrop-blur-sm rounded-full p-2">
-              <PlatformIcon platform={video.platform} size={20} />
-            </div>
-          </div>
+          
+          {/* Duration badge */}
           {video.duration && (
-            <div className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm rounded px-2 py-1 text-sm">
+            <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/70 text-white text-sm font-medium backdrop-blur-sm">
+              <Clock className="w-3.5 h-3.5" />
               {video.duration}
             </div>
           )}
+
+          {/* Play overlay */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/30">
+            <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
+              <Play className="w-7 h-7 text-foreground ml-1" fill="currentColor" />
+            </div>
+          </div>
         </div>
 
-        <div className="p-4 space-y-4">
-          <h3 className="font-semibold text-lg line-clamp-2">{video.title || 'Untitled Video'}</h3>
+        {/* Info */}
+        <div className="flex-1 p-5 md:p-6 flex flex-col">
+          <div className="flex-1">
+            <span className="inline-block px-2.5 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary mb-3 capitalize">
+              {video.platform}
+            </span>
+            
+            <h3 className="text-lg font-semibold text-foreground line-clamp-2 mb-4">
+              {video.title || 'Untitled Video'}
+            </h3>
 
-          {video.media.length > 1 && (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Select Quality:</p>
-              <div className="flex flex-wrap gap-2">
-                {video.media.map((media, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedQuality(media)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      selectedQuality === media
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted hover:bg-muted/80'
-                    }`}
-                  >
-                    {media.quality || media.format || `Option ${index + 1}`}
-                    {media.size && ` (${media.size})`}
-                  </button>
-                ))}
+            {/* Quality selection */}
+            {video.media.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Select quality</p>
+                <div className="flex flex-wrap gap-2">
+                  {video.media.map((media, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedMedia(media)}
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200",
+                        "border-2",
+                        selectedMedia === media
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                      )}
+                    >
+                      {media.quality || media.format || `Option ${index + 1}`}
+                      {media.size && ` (${media.size})`}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
+          {/* Download button */}
           <Button
             onClick={handleDownload}
-            disabled={!selectedQuality || isDownloading}
-            className="w-full h-12 text-base font-semibold gradient-btn border-0"
+            disabled={!selectedMedia || isDownloading}
+            className={cn(
+              "mt-5 h-12 text-base font-medium rounded-xl",
+              "gradient-btn text-primary-foreground",
+              "transition-all duration-300",
+              "hover:shadow-lg hover:shadow-primary/25"
+            )}
           >
             {isDownloading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Preparing Download...
-              </>
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Preparing download...
+              </span>
             ) : (
-              <>
-                <Download className="mr-2 h-5 w-5" />
+              <span className="flex items-center gap-2">
+                <Download className="w-5 h-5" />
                 Download Video
-              </>
+              </span>
             )}
           </Button>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }
