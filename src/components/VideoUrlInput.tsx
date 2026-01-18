@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link, Loader2, RefreshCw } from 'lucide-react';
+import { Search, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { PlatformIcon } from '@/components/PlatformIcon';
 import { detectPlatform } from '@/utils/platformDetector';
-import { Platform } from '@/types/video';
+import { cn } from '@/lib/utils';
 
 interface VideoUrlInputProps {
   onSubmit: (url: string) => void;
@@ -12,14 +11,28 @@ interface VideoUrlInputProps {
   error?: string;
   showRetry?: boolean;
   onRetry?: () => void;
+  placeholder?: string;
 }
 
-export function VideoUrlInput({ onSubmit, isLoading, error, showRetry, onRetry }: VideoUrlInputProps) {
+export function VideoUrlInput({ 
+  onSubmit, 
+  isLoading, 
+  error, 
+  showRetry = false, 
+  onRetry,
+  placeholder = "Paste video link here..."
+}: VideoUrlInputProps) {
   const [url, setUrl] = useState('');
-  const [platform, setPlatform] = useState<Platform>('unknown');
+  const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
-    setPlatform(detectPlatform(url));
+    if (url.trim()) {
+      const platform = detectPlatform(url);
+      setDetectedPlatform(platform !== 'unknown' ? platform : null);
+    } else {
+      setDetectedPlatform(null);
+    }
   }, [url]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -32,64 +45,89 @@ export function VideoUrlInput({ onSubmit, isLoading, error, showRetry, onRetry }
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-4">
       <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-          {platform !== 'unknown' ? (
-            <PlatformIcon platform={platform} size={20} />
-          ) : (
-            <Link className="h-5 w-5 text-muted-foreground" />
+        {/* Input container */}
+        <div
+          className={cn(
+            "relative flex items-center rounded-2xl transition-all duration-300",
+            "bg-secondary/50 dark:bg-secondary/30 backdrop-blur-sm",
+            "border-2",
+            isFocused 
+              ? "border-primary/50 shadow-lg shadow-primary/10" 
+              : "border-transparent",
+            error && "border-destructive/50"
+          )}
+        >
+          <div className="pl-5 text-muted-foreground">
+            <Search className="w-5 h-5" />
+          </div>
+          
+          <Input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder={placeholder}
+            className={cn(
+              "flex-1 h-14 text-base bg-transparent border-0",
+              "placeholder:text-muted-foreground/60",
+              "focus-visible:ring-0 focus-visible:ring-offset-0"
+            )}
+            disabled={isLoading}
+          />
+
+          {/* Platform badge */}
+          {detectedPlatform && (
+            <div className="pr-3 animate-fade-up">
+              <span className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary/10 text-primary capitalize">
+                {detectedPlatform}
+              </span>
+            </div>
           )}
         </div>
-        <Input
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Paste video link here…"
-          className="pl-12 pr-4 h-14 text-lg bg-muted/50 border-border/50 focus:border-primary/50 transition-all"
-          disabled={isLoading}
-        />
       </div>
 
+      {/* Error message */}
       {error && (
-        <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
-          <p className="text-destructive text-sm">
-            {error}
-          </p>
+        <div className="flex items-center gap-2 text-sm text-destructive animate-fade-up">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
           {showRetry && onRetry && (
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onRetry}
-              disabled={isLoading}
-              className="w-full"
+              className="ml-auto text-primary hover:text-primary"
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Try Again
+              <RefreshCw className="w-4 h-4 mr-1" />
+              Retry
             </Button>
           )}
         </div>
       )}
 
+      {/* Submit button */}
       <Button
         type="submit"
         disabled={!url.trim() || isLoading}
-        className="w-full h-14 text-lg font-semibold gradient-btn border-0"
+        className={cn(
+          "w-full h-12 text-base font-medium rounded-xl",
+          "gradient-btn text-primary-foreground",
+          "transition-all duration-300",
+          "hover:shadow-lg hover:shadow-primary/25",
+          "disabled:opacity-50 disabled:shadow-none"
+        )}
       >
         {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Fetching Video...
-          </>
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Fetching video info...
+          </span>
         ) : (
-          'Download'
+          "Download"
         )}
       </Button>
-
-      {platform !== 'unknown' && (
-        <p className="text-center text-sm text-muted-foreground animate-in fade-in">
-          Detected: <span className="text-foreground font-medium capitalize">{platform}</span>
-        </p>
-      )}
     </form>
   );
 }

@@ -1,17 +1,25 @@
 import { useState, lazy, Suspense } from 'react';
 import { Download } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { VideoUrlInput } from '@/components/VideoUrlInput';
-import { SupportedPlatforms } from '@/components/SupportedPlatforms';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
+import { PlatformTabs, PlatformTab } from '@/components/PlatformTabs';
+import { RecentDownloadsGrid } from '@/components/RecentDownloadsGrid';
 import { useDownloadHistory } from '@/hooks/useDownloadHistory';
 import { detectPlatform, isValidVideoUrl } from '@/utils/platformDetector';
 import { VideoInfo, VideoMedia, FetchVideoResponse } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Lazy load components that are not immediately visible
 const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
-const DownloadHistory = lazy(() => import('@/components/DownloadHistory').then(m => ({ default: m.DownloadHistory })));
+
+const platformPlaceholders: Record<PlatformTab, string> = {
+  all: "Paste any video link here...",
+  youtube: "Paste YouTube video link...",
+  instagram: "Paste Instagram video link...",
+  tiktok: "Paste TikTok video link...",
+  facebook: "Paste Facebook video link...",
+};
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +29,7 @@ const Index = () => {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [originalUrl, setOriginalUrl] = useState('');
   const [lastAttemptedUrl, setLastAttemptedUrl] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformTab>('all');
 
   const { history, addToHistory, clearHistory } = useDownloadHistory();
 
@@ -82,7 +91,6 @@ const Index = () => {
     try {
       let downloadUrl = media.url;
 
-      // For YouTube (no direct URL), use Cobalt API via edge function
       if (!media.url && videoInfo.originalUrl) {
         const { data, error: fnError } = await supabase.functions.invoke('fetch-video', {
           body: { 
@@ -104,7 +112,6 @@ const Index = () => {
         throw new Error('No download URL available');
       }
 
-      // Add to history
       addToHistory({
         title: videoInfo.title,
         thumbnail: videoInfo.thumbnail,
@@ -112,14 +119,12 @@ const Index = () => {
         url: originalUrl,
       });
 
-      // Open download in new tab
       window.open(downloadUrl, '_blank');
       
       toast.success('Download started!', {
         description: 'Your video is being downloaded.',
       });
 
-      // Reset state after successful download
       setTimeout(() => {
         setVideoInfo(null);
         setOriginalUrl('');
@@ -136,74 +141,81 @@ const Index = () => {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
-      {/* Decorative background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+    <div className="relative min-h-screen">
+      <AnimatedBackground />
+      
+      {/* Theme toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
       </div>
 
-      <div className="relative z-10 w-full max-w-xl">
+      <main className="relative z-10 min-h-screen flex flex-col items-center px-4 py-12 md:py-20">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary mb-4 animate-float">
-            <Download className="w-8 h-8 text-primary-foreground" />
+        <div className="text-center mb-8 animate-fade-up">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-6">
+            <Download className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-            All Video Downloader
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+            Video Downloader
           </h1>
-          <p className="text-muted-foreground">
-            Download videos from your favorite platforms
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Download videos from your favorite platforms quickly and easily
           </p>
         </div>
 
-        {/* Supported platforms */}
-        <SupportedPlatforms />
+        {/* Platform tabs */}
+        <div className="mb-8 animate-fade-up-delay-1">
+          <PlatformTabs 
+            selectedPlatform={selectedPlatform} 
+            onSelectPlatform={setSelectedPlatform} 
+          />
+        </div>
 
-        {/* Main Card */}
-        <Card className="glass-card mt-6">
-          <CardHeader className="pb-4">
-            <h2 className="text-lg font-medium text-center text-muted-foreground">
-              Paste your video link below
-            </h2>
-          </CardHeader>
-          <CardContent>
+        {/* Main card */}
+        <div className="w-full max-w-xl mb-10 animate-fade-up-delay-2">
+          <div className="glass-card rounded-3xl p-6 md:p-8">
             <VideoUrlInput
               onSubmit={handleFetchVideo}
               isLoading={isLoading}
               error={error}
               showRetry={isServiceUnavailable && !!lastAttemptedUrl}
               onRetry={() => lastAttemptedUrl && handleFetchVideo(lastAttemptedUrl)}
+              placeholder={platformPlaceholders[selectedPlatform]}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Video Preview */}
+        {/* Video preview */}
         {videoInfo && (
-          <Suspense fallback={<div className="mt-6 h-64 bg-muted/50 rounded-lg animate-pulse" />}>
-            <div className="mt-6">
+          <div className="w-full max-w-2xl mb-12">
+            <Suspense fallback={
+              <div className="h-48 rounded-2xl bg-secondary/50 animate-pulse" />
+            }>
               <VideoPreview
                 video={videoInfo}
                 onDownload={handleDownload}
                 isDownloading={isDownloading}
               />
-            </div>
-          </Suspense>
+            </Suspense>
+          </div>
         )}
 
-        {/* Download History */}
-        <Suspense fallback={null}>
-          <DownloadHistory history={history} onClear={clearHistory} />
-        </Suspense>
+        {/* Recent downloads */}
+        <div className="w-full max-w-4xl animate-fade-up-delay-3">
+          <RecentDownloadsGrid
+            history={history}
+            onClear={clearHistory}
+          />
+        </div>
 
         {/* Footer */}
-        <footer className="mt-12 text-center">
-          <p className="text-xs text-muted-foreground">
-            For educational purposes only
+        <footer className="mt-auto pt-12 text-center">
+          <p className="text-sm text-muted-foreground/60">
+            For educational purposes only. Respect copyright laws.
           </p>
         </footer>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 };
 
