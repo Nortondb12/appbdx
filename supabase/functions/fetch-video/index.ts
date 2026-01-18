@@ -12,73 +12,71 @@ serve(async (req) => {
   }
 
   try {
-    const { url, download, videoId, format } = await req.json();
+    const { url, download, videoId, format, platform } = await req.json();
 
     const apiToken = Deno.env.get("FASTSAVER_API_KEY");
-    
-    if (!apiToken) {
-      console.error("FASTSAVER_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ status: false, error: "Server configuration error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
-    // Handle download request - proxy to FastSaverAPI
-    if (download && videoId && format) {
-      console.log("Processing download request for:", videoId, format);
-      
-      const downloadUrl = `https://fastsaverapi.com/download?video_id=${videoId}&format=${format}&token=${apiToken}`;
-      
-      try {
-        // Call the download endpoint and follow redirects to get final URL
-        const downloadResponse = await fetch(downloadUrl, {
-          method: "GET",
-          redirect: "follow",
-        });
-        
-        // Check if we got a video file or redirect
-        const finalUrl = downloadResponse.url;
-        const contentType = downloadResponse.headers.get("content-type") || "";
-        
-        console.log("Download response URL:", finalUrl);
-        console.log("Content-Type:", contentType);
-        
-        // If the response is video content, return the final URL
-        if (contentType.includes("video") || contentType.includes("audio") || finalUrl !== downloadUrl) {
-          return new Response(
-            JSON.stringify({ status: true, downloadUrl: finalUrl }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-        
-        // Try to parse as JSON error
-        const responseText = await downloadResponse.text();
-        console.log("Download response text:", responseText.substring(0, 200));
-        
+    // Handle download request
+    if (download) {
+      console.log("Processing download request for:", platform, videoId, format);
+
+      // For YouTube, use Cobalt API
+      if (platform === "youtube" && url) {
         try {
-          const jsonResponse = JSON.parse(responseText);
-          if (jsonResponse.url) {
+          const cobaltResponse = await fetch("https://api.cobalt.tools/", {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url: url,
+              videoQuality: format === "Audio (MP3)" ? "360" : format?.replace("p", "") || "720",
+              audioFormat: "mp3",
+              downloadMode: format === "Audio (MP3)" ? "audio" : "auto",
+            }),
+          });
+
+          const cobaltData = await cobaltResponse.json();
+          console.log("Cobalt API response:", JSON.stringify(cobaltData, null, 2));
+
+          if (cobaltData.status === "error") {
+            throw new Error(cobaltData.error?.code || "Cobalt API error");
+          }
+
+          // Cobalt returns different statuses: redirect, tunnel, picker
+          if (cobaltData.url) {
             return new Response(
-              JSON.stringify({ status: true, downloadUrl: jsonResponse.url }),
+              JSON.stringify({ status: true, downloadUrl: cobaltData.url }),
               { headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
-        } catch {
-          // Not JSON, might be an error page
+
+          // If picker (multiple options), use the first video
+          if (cobaltData.picker && cobaltData.picker.length > 0) {
+            return new Response(
+              JSON.stringify({ status: true, downloadUrl: cobaltData.picker[0].url }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          throw new Error("No download URL in response");
+        } catch (cobaltError) {
+          console.error("Cobalt API error:", cobaltError);
+          const errorMessage = cobaltError instanceof Error ? cobaltError.message : "Unknown error";
+          return new Response(
+            JSON.stringify({ status: false, error: `YouTube download failed: ${errorMessage}` }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
         }
-        
-        return new Response(
-          JSON.stringify({ status: false, error: "Failed to get download URL" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } catch (downloadError) {
-        console.error("Download error:", downloadError);
-        return new Response(
-          JSON.stringify({ status: false, error: "Download failed" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
       }
+
+      // For other platforms, the media URLs are already direct download URLs
+      // Just return success - the frontend already has the URL
+      return new Response(
+        JSON.stringify({ status: false, error: "Direct download URL should be used" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Regular video info fetch
@@ -86,6 +84,14 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ status: false, error: "Video URL is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!apiToken) {
+      console.error("FASTSAVER_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ status: false, error: "Server configuration error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -143,24 +149,23 @@ serve(async (req) => {
       );
     }
 
-    // Get media links - for YouTube, we need to construct download URLs
+    // Get media links from FastSaverAPI
     let media = transformMediaLinks(data);
     
-    // For YouTube videos, FastSaverAPI requires /download endpoint
-    // We store videoId instead of full URL to keep API token secure
-    if (data.hosting === "youtube" && data.shortcode && media.length === 0) {
+    // For YouTube videos, FastSaverAPI only returns metadata
+    // We'll use Cobalt API for actual downloads, so just provide quality options
+    if (data.hosting === "youtube" && media.length === 0) {
       const qualities = ["1080p", "720p", "480p", "360p"];
       media = qualities.map(quality => ({
-        videoId: data.shortcode,
         quality: quality,
-        format: "video"
+        format: "video",
+        // No URL - will use Cobalt API for download
       }));
       
       // Add audio option
       media.push({
-        videoId: data.shortcode,
         quality: "Audio (MP3)",
-        format: "mp3"
+        format: "mp3",
       });
     }
 
@@ -172,6 +177,8 @@ serve(async (req) => {
       duration: data.duration || "",
       platform: data.hosting || "",
       media: media,
+      // Include original URL for YouTube downloads via Cobalt
+      originalUrl: data.hosting === "youtube" ? url : undefined,
     };
 
     return new Response(
@@ -192,8 +199,8 @@ serve(async (req) => {
 });
 
 // Transform various API response formats to our unified media format
-function transformMediaLinks(data: any): Array<{ url?: string; videoId?: string; quality?: string; format?: string }> {
-  const media: Array<{ url?: string; videoId?: string; quality?: string; format?: string }> = [];
+function transformMediaLinks(data: any): Array<{ url?: string; quality?: string; format?: string }> {
+  const media: Array<{ url?: string; quality?: string; format?: string }> = [];
 
   // Handle different response structures from FastSaverAPI
   if (data.medias && Array.isArray(data.medias)) {

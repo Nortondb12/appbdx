@@ -2,7 +2,6 @@ export type Platform = 'facebook' | 'instagram' | 'youtube' | 'tiktok' | 'unknow
 
 export interface VideoMedia {
   url?: string;
-  videoId?: string;
   quality?: string;
   format?: string;
   size?: string;
@@ -14,6 +13,7 @@ export interface VideoInfo {
   duration?: string;
   platform: Platform;
   media: VideoMedia[];
+  originalUrl?: string;
 }
 
 export interface DownloadHistoryItem {
@@ -32,4 +32,5 @@ export interface FetchVideoResponse {
   duration?: string;
   media?: VideoMedia[];
   error?: string;
+  originalUrl?: string;
 }
