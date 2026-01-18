@@ -270,21 +270,116 @@ serve(async (req) => {
     // Get media links from FastSaverAPI
     let media = transformMediaLinks(data);
     
-    // For YouTube videos, FastSaverAPI only returns metadata
-    // We'll use RapidAPI for actual downloads, so just provide quality options
+    // For YouTube videos, fetch ACTUAL available qualities from RapidAPI
     if (data.hosting === "youtube" && media.length === 0) {
-      const qualities = ["2160p (4K)", "1440p60", "1440p", "1080p60", "1080p", "720p60", "720p", "480p", "360p"];
-      media = qualities.map(quality => ({
-        quality: quality,
-        format: "video",
-        // No URL - will use RapidAPI for download
-      }));
+      const rapidApiKey = Deno.env.get("RAPIDAPI_KEY");
       
-      // Add audio option
-      media.push({
-        quality: "Audio (MP3)",
-        format: "mp3",
-      });
+      if (rapidApiKey) {
+        try {
+          // Extract video ID from YouTube URL
+          const videoIdMatch = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+          const ytVideoId = videoIdMatch ? videoIdMatch[1] : null;
+          
+          if (ytVideoId) {
+            console.log("Fetching actual YouTube qualities for video:", ytVideoId);
+            
+            const rapidResponse = await fetch(
+              `https://ytstream-download-youtube-videos.p.rapidapi.com/dl?id=${ytVideoId}`,
+              {
+                method: "GET",
+                headers: {
+                  "X-RapidAPI-Key": rapidApiKey,
+                  "X-RapidAPI-Host": "ytstream-download-youtube-videos.p.rapidapi.com",
+                },
+              }
+            );
+            
+            const rapidData = await rapidResponse.json();
+            console.log("RapidAPI response for qualities:", JSON.stringify(rapidData, null, 2).substring(0, 1000));
+            
+            if (rapidData.status !== "fail" && !rapidData.error) {
+              // Map to track unique qualities (key: resolution number, value: quality info)
+              const qualityMap = new Map<number, { quality: string; hasAudio: boolean; format: string }>();
+              
+              // 1. First, add combined formats (video+audio) - these are preferred
+              if (rapidData.formats && Array.isArray(rapidData.formats)) {
+                for (const format of rapidData.formats) {
+                  if (format.qualityLabel && format.mimeType?.includes("video/")) {
+                    const resMatch = format.qualityLabel.match(/(\d+)p/);
+                    const resolution = resMatch ? parseInt(resMatch[1]) : 0;
+                    
+                    if (resolution > 0) {
+                      qualityMap.set(resolution, {
+                        quality: format.qualityLabel,
+                        hasAudio: true,
+                        format: "video"
+                      });
+                    }
+                  }
+                }
+              }
+              
+              // 2. Add adaptive formats (video-only for higher qualities not in combined)
+              if (rapidData.adaptiveFormats && Array.isArray(rapidData.adaptiveFormats)) {
+                for (const format of rapidData.adaptiveFormats) {
+                  if (format.qualityLabel && format.mimeType?.includes("video/")) {
+                    const resMatch = format.qualityLabel.match(/(\d+)p/);
+                    const resolution = resMatch ? parseInt(resMatch[1]) : 0;
+                    
+                    // Only add if we don't have a combined format for this resolution
+                    if (resolution > 0 && !qualityMap.has(resolution)) {
+                      qualityMap.set(resolution, {
+                        quality: format.qualityLabel + " (no audio)",
+                        hasAudio: false,
+                        format: "video"
+                      });
+                    }
+                  }
+                }
+              }
+              
+              // 3. Sort by resolution (highest first) and convert to media array
+              const sortedQualities = Array.from(qualityMap.entries())
+                .sort((a, b) => b[0] - a[0])
+                .map(([_, info]) => ({
+                  quality: info.quality,
+                  format: info.format,
+                }));
+              
+              if (sortedQualities.length > 0) {
+                media = sortedQualities;
+                console.log("Found actual qualities:", sortedQualities.map(q => q.quality).join(", "));
+              }
+              
+              // 4. Add audio option if available
+              const hasAudio = rapidData.adaptiveFormats?.some((f: any) => f.mimeType?.includes("audio/"));
+              if (hasAudio) {
+                media.push({
+                  quality: "Audio (MP3)",
+                  format: "mp3",
+                });
+              }
+            }
+          }
+        } catch (rapidError) {
+          console.error("Error fetching YouTube qualities:", rapidError);
+          // Fall through to fallback
+        }
+      }
+      
+      // Fallback to basic qualities if RapidAPI fails or returns nothing
+      if (media.length === 0) {
+        console.log("Using fallback quality list");
+        const qualities = ["1080p", "720p", "480p", "360p"];
+        media = qualities.map(quality => ({
+          quality: quality,
+          format: "video",
+        }));
+        media.push({
+          quality: "Audio (MP3)",
+          format: "mp3",
+        });
+      }
     }
 
     // Transform the response to match our expected format
