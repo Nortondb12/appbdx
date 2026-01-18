@@ -136,7 +136,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       {/* Decorative background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
@@ -203,7 +203,7 @@ const Index = () => {
           </p>
         </footer>
       </div>
-    </div>
+    </main>
   );
 };
 
