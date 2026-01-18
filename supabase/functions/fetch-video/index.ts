@@ -198,6 +198,26 @@ serve(async (req) => {
     const responseText = await response.text();
     console.log("FastSaver API raw response:", responseText.substring(0, 500));
 
+    // Check if the response is an HTML error page (API outage)
+    if (
+      responseText.startsWith("<!DOCTYPE") || 
+      responseText.startsWith("<html") || 
+      responseText.includes("502 Bad Gateway") || 
+      responseText.includes("503 Service") ||
+      responseText.includes("504 Gateway") ||
+      !response.ok
+    ) {
+      console.error("FastSaver API returned error page, status:", response.status);
+      return new Response(
+        JSON.stringify({ 
+          status: false, 
+          error: "The video service is temporarily unavailable. Please wait a moment and try again.",
+          isServiceUnavailable: true
+        }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     let data;
     try {
       data = JSON.parse(responseText);
@@ -206,7 +226,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           status: false, 
-          error: "Invalid response from video service. Please try again." 
+          error: "Invalid response from video service. Please try again.",
+          isServiceUnavailable: true
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
