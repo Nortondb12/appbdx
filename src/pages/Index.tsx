@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VideoUrlInput } from '@/components/VideoUrlInput';
-import { VideoPreview } from '@/components/VideoPreview';
-import { DownloadHistory } from '@/components/DownloadHistory';
 import { SupportedPlatforms } from '@/components/SupportedPlatforms';
 import { useDownloadHistory } from '@/hooks/useDownloadHistory';
 import { detectPlatform, isValidVideoUrl } from '@/utils/platformDetector';
 import { VideoInfo, VideoMedia, FetchVideoResponse } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// Lazy load components that are not immediately visible
+const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
+const DownloadHistory = lazy(() => import('@/components/DownloadHistory').then(m => ({ default: m.DownloadHistory })));
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -178,17 +180,21 @@ const Index = () => {
 
         {/* Video Preview */}
         {videoInfo && (
-          <div className="mt-6">
-            <VideoPreview
-              video={videoInfo}
-              onDownload={handleDownload}
-              isDownloading={isDownloading}
-            />
-          </div>
+          <Suspense fallback={<div className="mt-6 h-64 bg-muted/50 rounded-lg animate-pulse" />}>
+            <div className="mt-6">
+              <VideoPreview
+                video={videoInfo}
+                onDownload={handleDownload}
+                isDownloading={isDownloading}
+              />
+            </div>
+          </Suspense>
         )}
 
         {/* Download History */}
-        <DownloadHistory history={history} onClear={clearHistory} />
+        <Suspense fallback={null}>
+          <DownloadHistory history={history} onClear={clearHistory} />
+        </Suspense>
 
         {/* Footer */}
         <footer className="mt-12 text-center">
