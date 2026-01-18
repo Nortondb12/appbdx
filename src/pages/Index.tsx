@@ -15,15 +15,19 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [isServiceUnavailable, setIsServiceUnavailable] = useState(false);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [originalUrl, setOriginalUrl] = useState('');
+  const [lastAttemptedUrl, setLastAttemptedUrl] = useState('');
 
   const { history, addToHistory, clearHistory } = useDownloadHistory();
 
   const handleFetchVideo = async (url: string) => {
     setError(undefined);
+    setIsServiceUnavailable(false);
     setVideoInfo(null);
     setOriginalUrl(url);
+    setLastAttemptedUrl(url);
 
     if (!isValidVideoUrl(url)) {
       setError('Please enter a valid video URL from Facebook, Instagram, YouTube, or TikTok');
@@ -41,10 +45,11 @@ const Index = () => {
         throw new Error(fnError.message || 'Failed to fetch video');
       }
 
-      const response = data as FetchVideoResponse;
+      const response = data as FetchVideoResponse & { isServiceUnavailable?: boolean };
 
       if (!response.status) {
         setError(response.error || 'Failed to fetch video information');
+        setIsServiceUnavailable(response.isServiceUnavailable || false);
         return;
       }
 
@@ -165,6 +170,8 @@ const Index = () => {
               onSubmit={handleFetchVideo}
               isLoading={isLoading}
               error={error}
+              showRetry={isServiceUnavailable && !!lastAttemptedUrl}
+              onRetry={() => lastAttemptedUrl && handleFetchVideo(lastAttemptedUrl)}
             />
           </CardContent>
         </Card>

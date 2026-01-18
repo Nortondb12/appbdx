@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, Loader2 } from 'lucide-react';
+import { Link, Loader2, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PlatformIcon } from '@/components/PlatformIcon';
@@ -10,9 +10,11 @@ interface VideoUrlInputProps {
   onSubmit: (url: string) => void;
   isLoading: boolean;
   error?: string;
+  showRetry?: boolean;
+  onRetry?: () => void;
 }
 
-export function VideoUrlInput({ onSubmit, isLoading, error }: VideoUrlInputProps) {
+export function VideoUrlInput({ onSubmit, isLoading, error, showRetry, onRetry }: VideoUrlInputProps) {
   const [url, setUrl] = useState('');
   const [platform, setPlatform] = useState<Platform>('unknown');
 
@@ -48,9 +50,24 @@ export function VideoUrlInput({ onSubmit, isLoading, error }: VideoUrlInputProps
       </div>
 
       {error && (
-        <p className="text-destructive text-sm animate-in fade-in slide-in-from-top-1">
-          {error}
-        </p>
+        <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+          <p className="text-destructive text-sm">
+            {error}
+          </p>
+          {showRetry && onRetry && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              disabled={isLoading}
+              className="w-full"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          )}
+        </div>
       )}
 
       <Button
