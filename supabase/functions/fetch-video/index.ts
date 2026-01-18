@@ -63,53 +63,64 @@ serve(async (req) => {
           // Find the requested quality or best available
           const requestedQuality = format?.replace("p", "") || "720";
           let downloadUrl = null;
-          
-          // For video downloads, check adaptiveFormats first (higher quality, video-only streams)
-          if (format !== "Audio (MP3)" && rapidData.adaptiveFormats && Array.isArray(rapidData.adaptiveFormats)) {
-            // Find format matching requested quality (e.g., "1080" matches "1080p" or "1080p60")
-            const videoFormat = rapidData.adaptiveFormats.find((f: any) => 
-              f.mimeType?.includes("video/") && 
-              f.qualityLabel?.startsWith(requestedQuality + "p")
-            );
+          let selectedQuality = null;
+
+          // Parse the link object from YTStream API
+          // Structure: { "itag": [url, quality, unknown, format_description, file_size], ... }
+          if (rapidData.link && typeof rapidData.link === 'object') {
+            const links = Object.entries(rapidData.link);
+            console.log("Available links:", links.length);
             
-            if (videoFormat) {
-              downloadUrl = videoFormat.url;
-              console.log("Found video in adaptiveFormats:", videoFormat.qualityLabel);
+            if (format === "Audio (MP3)") {
+              // Find audio format (look for "audio" in format description)
+              for (const [itag, linkData] of links) {
+                if (Array.isArray(linkData) && linkData[3]?.toLowerCase().includes('audio')) {
+                  downloadUrl = linkData[0];
+                  selectedQuality = linkData[1];
+                  console.log("Found audio:", selectedQuality, linkData[4]);
+                  break;
+                }
+              }
+            } else {
+              // Find video format matching requested quality
+              // First try exact match
+              for (const [itag, linkData] of links) {
+                if (Array.isArray(linkData) && 
+                    linkData[3]?.toLowerCase().includes('video') &&
+                    linkData[1]?.startsWith(requestedQuality)) {
+                  downloadUrl = linkData[0];
+                  selectedQuality = linkData[1];
+                  console.log("Found exact match:", selectedQuality, linkData[4]);
+                  break;
+                }
+              }
+              
+              // If no exact match, get highest quality video available
+              if (!downloadUrl) {
+                const videoLinks = links.filter(([_, linkData]) => 
+                  Array.isArray(linkData) && linkData[3]?.toLowerCase().includes('video')
+                );
+                
+                if (videoLinks.length > 0) {
+                  // Sort by quality (extract number from quality string like "720p")
+                  videoLinks.sort((a, b) => {
+                    const qualityA = parseInt((a[1] as any[])[1]?.replace(/\D/g, '') || "0");
+                    const qualityB = parseInt((b[1] as any[])[1]?.replace(/\D/g, '') || "0");
+                    return qualityB - qualityA;
+                  });
+                  
+                  const bestLink = videoLinks[0][1] as any[];
+                  downloadUrl = bestLink[0];
+                  selectedQuality = bestLink[1];
+                  console.log("Using best available:", selectedQuality, bestLink[4]);
+                }
+              }
             }
           }
-          
-          // Fallback to formats array (combined video+audio, usually lower quality)
-          if (!downloadUrl && format !== "Audio (MP3)" && rapidData.formats && Array.isArray(rapidData.formats)) {
-            const videoFormat = rapidData.formats.find((f: any) => 
-              f.mimeType?.includes("video/") && 
-              f.qualityLabel?.startsWith(requestedQuality + "p")
-            ) || rapidData.formats.find((f: any) => f.mimeType?.includes("video/"));
-            
-            if (videoFormat) {
-              downloadUrl = videoFormat.url;
-              console.log("Found video in formats:", videoFormat.qualityLabel);
-            }
-          }
-          
-          // For audio downloads
-          if (format === "Audio (MP3)" && rapidData.adaptiveFormats && Array.isArray(rapidData.adaptiveFormats)) {
-            // Find highest quality audio
-            const audioFormats = rapidData.adaptiveFormats.filter((f: any) => 
-              f.mimeType?.includes("audio/")
-            );
-            
-            if (audioFormats.length > 0) {
-              // Sort by bitrate descending and pick the best
-              audioFormats.sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
-              downloadUrl = audioFormats[0].url;
-              console.log("Found audio format with bitrate:", audioFormats[0].bitrate);
-            }
-          }
-          
-          // Fallback to link if available
-          if (!downloadUrl && rapidData.link) {
-            downloadUrl = rapidData.link;
-          }
+
+          // Log what we found
+          console.log("Selected download URL:", downloadUrl ? "found" : "not found");
+          console.log("Selected quality:", selectedQuality);
           
           if (downloadUrl) {
             return new Response(
