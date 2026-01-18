@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import { Download } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { VideoUrlInput } from '@/components/VideoUrlInput';
 import { SupportedPlatforms } from '@/components/SupportedPlatforms';
 import { useDownloadHistory } from '@/hooks/useDownloadHistory';
@@ -163,9 +163,9 @@ const Index = () => {
         {/* Main Card */}
         <Card className="glass-card mt-6">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-medium text-center text-muted-foreground">
+            <h2 className="text-lg font-medium text-center text-muted-foreground">
               Paste your video link below
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent>
             <VideoUrlInput
