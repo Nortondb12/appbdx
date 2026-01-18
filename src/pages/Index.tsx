@@ -213,7 +213,7 @@ const Index = () => {
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto pt-12 text-center">
+        <footer className="mt-12 pt-6 text-center">
           <a 
             href="https://facebook.com/Alaminbd17" 
             target="_blank" 
