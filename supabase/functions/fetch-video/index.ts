@@ -283,6 +283,24 @@ serve(async (req) => {
 function transformMediaLinks(data: any): Array<{ url?: string; quality?: string; format?: string }> {
   const media: Array<{ url?: string; quality?: string; format?: string }> = [];
 
+  // Handle TikTok direct download_url from FastSaverAPI
+  if (data.download_url) {
+    media.push({
+      url: data.download_url,
+      quality: "HD",
+      format: data.type || "video",
+    });
+    
+    // Also add music/audio if available
+    if (data.music) {
+      media.push({
+        url: data.music,
+        quality: "Audio",
+        format: "audio",
+      });
+    }
+  }
+
   // Handle different response structures from FastSaverAPI
   if (data.medias && Array.isArray(data.medias)) {
     for (const m of data.medias) {
