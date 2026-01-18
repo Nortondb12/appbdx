@@ -273,11 +273,11 @@ serve(async (req) => {
     // For YouTube videos, FastSaverAPI only returns metadata
     // We'll use RapidAPI for actual downloads, so just provide quality options
     if (data.hosting === "youtube" && media.length === 0) {
-      const qualities = ["1080p", "720p", "480p", "360p"];
+      const qualities = ["2160p (4K)", "1440p60", "1440p", "1080p60", "1080p", "720p60", "720p", "480p", "360p"];
       media = qualities.map(quality => ({
         quality: quality,
         format: "video",
-        // No URL - will use Cobalt API for download
+        // No URL - will use RapidAPI for download
       }));
       
       // Add audio option
