@@ -20,47 +20,87 @@ serve(async (req) => {
     if (download) {
       console.log("Processing download request for:", platform, videoId, format);
 
-      // For YouTube, use self-hosted Cobalt API
+      // For YouTube, use RapidAPI YTStream
       if (platform === "youtube" && url) {
         try {
-          console.log("Calling self-hosted Cobalt API for URL:", url);
+          const rapidApiKey = Deno.env.get("RAPIDAPI_KEY");
           
-          const cobaltResponse = await fetch("http://135.181.95.9:9000/api/json", {
-            method: "POST",
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ url }),
-          });
-
-          const cobaltData = await cobaltResponse.json();
-          console.log("Cobalt API response:", JSON.stringify(cobaltData, null, 2));
-
-          if (cobaltData.status === "error") {
-            throw new Error(cobaltData.error?.code || "Cobalt API error");
-          }
-
-          // Cobalt returns different statuses: redirect, tunnel, picker
-          if (cobaltData.url) {
+          if (!rapidApiKey) {
             return new Response(
-              JSON.stringify({ status: true, downloadUrl: cobaltData.url }),
+              JSON.stringify({ status: false, error: "YouTube download service not configured" }),
+              { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          
+          console.log("Calling RapidAPI for YouTube URL:", url);
+          
+          // Extract video ID from YouTube URL
+          const videoIdMatch = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+          const ytVideoId = videoIdMatch ? videoIdMatch[1] : null;
+          
+          if (!ytVideoId) {
+            throw new Error("Invalid YouTube URL - could not extract video ID");
+          }
+          
+          const rapidResponse = await fetch(
+            `https://ytstream-download-youtube-videos.p.rapidapi.com/dl?id=${ytVideoId}`,
+            {
+              method: "GET",
+              headers: {
+                "X-RapidAPI-Key": rapidApiKey,
+                "X-RapidAPI-Host": "ytstream-download-youtube-videos.p.rapidapi.com",
+              },
+            }
+          );
+          
+          const rapidData = await rapidResponse.json();
+          console.log("RapidAPI response status:", rapidData.status);
+          
+          if (rapidData.status === "fail") {
+            throw new Error(rapidData.msg || "Failed to get download link");
+          }
+          
+          // Find the requested quality or best available
+          const requestedQuality = format?.replace("p", "") || "720";
+          let downloadUrl = null;
+          
+          // Check formats array for video downloads
+          if (rapidData.formats && Array.isArray(rapidData.formats)) {
+            const videoFormat = rapidData.formats.find((f: any) => 
+              f.qualityLabel?.includes(requestedQuality) && f.hasVideo
+            ) || rapidData.formats.find((f: any) => f.hasVideo && f.hasAudio);
+            
+            if (videoFormat) {
+              downloadUrl = videoFormat.url;
+            }
+          }
+          
+          // For audio, check adaptiveFormats
+          if (format === "Audio (MP3)" && rapidData.adaptiveFormats) {
+            const audioFormat = rapidData.adaptiveFormats.find((f: any) => 
+              f.mimeType?.includes("audio")
+            );
+            if (audioFormat) {
+              downloadUrl = audioFormat.url;
+            }
+          }
+          
+          // Fallback to link if available
+          if (!downloadUrl && rapidData.link) {
+            downloadUrl = rapidData.link;
+          }
+          
+          if (downloadUrl) {
+            return new Response(
+              JSON.stringify({ status: true, downloadUrl }),
               { headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
-
-          // If picker (multiple options), use the first video
-          if (cobaltData.picker && cobaltData.picker.length > 0) {
-            return new Response(
-              JSON.stringify({ status: true, downloadUrl: cobaltData.picker[0].url }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-          }
-
-          throw new Error("No download URL in response");
-        } catch (cobaltError) {
-          console.error("Cobalt API error:", cobaltError);
-          const errorMessage = cobaltError instanceof Error ? cobaltError.message : "Unknown error";
+          
+          throw new Error("No download URL found for requested quality");
+        } catch (rapidError) {
+          console.error("RapidAPI error:", rapidError);
+          const errorMessage = rapidError instanceof Error ? rapidError.message : "Unknown error";
           return new Response(
             JSON.stringify({ status: false, error: `YouTube download failed: ${errorMessage}` }),
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -150,7 +190,7 @@ serve(async (req) => {
     let media = transformMediaLinks(data);
     
     // For YouTube videos, FastSaverAPI only returns metadata
-    // We'll use Cobalt API for actual downloads, so just provide quality options
+    // We'll use RapidAPI for actual downloads, so just provide quality options
     if (data.hosting === "youtube" && media.length === 0) {
       const qualities = ["1080p", "720p", "480p", "360p"];
       media = qualities.map(quality => ({
