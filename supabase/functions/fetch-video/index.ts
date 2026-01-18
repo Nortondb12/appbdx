@@ -215,11 +215,16 @@ serve(async (req) => {
     console.log("FastSaver API parsed response:", JSON.stringify(data, null, 2));
 
     // Check if the API returned an error (data.error can be false which is OK)
-    if (data.error === true || data.status === false) {
+    if (data.error === true || data.status === false || data.error === "invalid_url") {
+      // Provide more helpful error messages based on error type
+      let errorMessage = data.message || "Failed to fetch video. Please check the URL and try again.";
+      if (data.error === "invalid_url") {
+        errorMessage = "This video URL is not supported or the video may be unavailable. Please try again or use a different video.";
+      }
       return new Response(
         JSON.stringify({ 
           status: false, 
-          error: data.message || "Failed to fetch video. Please check the URL and try again." 
+          error: errorMessage 
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
