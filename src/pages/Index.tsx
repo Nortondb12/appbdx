@@ -218,7 +218,7 @@ const Index = () => {
             href="https://facebook.com/Alaminbd17" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-sm text-muted-foreground/60 hover:text-primary transition-colors"
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             For educational purposes only. Respect copyright laws.
           </a>
