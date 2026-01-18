@@ -74,24 +74,45 @@ serve(async (req) => {
 
     console.log("FastSaver API parsed response:", JSON.stringify(data, null, 2));
 
-    // Check if the API returned an error
-    if (data.error || data.status === false) {
+    // Check if the API returned an error (data.error can be false which is OK)
+    if (data.error === true || data.status === false) {
       return new Response(
         JSON.stringify({ 
           status: false, 
-          error: data.error || data.message || "Failed to fetch video. Please check the URL and try again." 
+          error: data.message || "Failed to fetch video. Please check the URL and try again." 
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Get media links - for YouTube, we need to construct download URLs
+    let media = transformMediaLinks(data);
+    
+    // For YouTube videos, FastSaverAPI requires /download endpoint
+    if (data.hosting === "youtube" && data.shortcode && media.length === 0) {
+      const qualities = ["1080p", "720p", "480p", "360p"];
+      media = qualities.map(quality => ({
+        url: `https://fastsaverapi.com/download?video_id=${data.shortcode}&format=${quality}&token=${apiToken}`,
+        quality: quality,
+        format: "video"
+      }));
+      
+      // Add audio option
+      media.push({
+        url: `https://fastsaverapi.com/download?video_id=${data.shortcode}&format=mp3&token=${apiToken}`,
+        quality: "Audio (MP3)",
+        format: "mp3"
+      });
     }
 
     // Transform the response to match our expected format
     const result = {
       status: true,
       title: data.title || data.caption || "Untitled Video",
-      thumbnail: data.thumbnail || data.cover || "",
+      thumbnail: data.thumb_best || data.thumb || data.thumbnail || data.cover || "",
       duration: data.duration || "",
-      media: transformMediaLinks(data),
+      platform: data.hosting || "",
+      media: media,
     };
 
     return new Response(
