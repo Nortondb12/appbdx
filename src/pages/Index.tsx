@@ -210,9 +210,14 @@ const Index = () => {
 
         {/* Footer */}
         <footer className="mt-auto pt-12 text-center">
-          <p className="text-sm text-muted-foreground/60">
+          <a 
+            href="https://facebook.com/Alaminbd17" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground/60 hover:text-primary transition-colors"
+          >
             For educational purposes only. Respect copyright laws.
-          </p>
+          </a>
         </footer>
       </main>
     </div>
