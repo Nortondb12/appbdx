@@ -56,6 +56,7 @@ const Index = () => {
         duration: response.duration,
         platform,
         media: response.media || [],
+        originalUrl: response.originalUrl,
       });
 
     } catch (err) {
@@ -74,13 +75,14 @@ const Index = () => {
     try {
       let downloadUrl = media.url;
 
-      // If media has videoId (YouTube), we need to proxy through edge function
-      if (media.videoId) {
+      // For YouTube (no direct URL), use Cobalt API via edge function
+      if (!media.url && videoInfo.originalUrl) {
         const { data, error: fnError } = await supabase.functions.invoke('fetch-video', {
           body: { 
             download: true,
-            videoId: media.videoId,
+            url: videoInfo.originalUrl,
             format: media.quality,
+            platform: 'youtube',
           },
         });
 
