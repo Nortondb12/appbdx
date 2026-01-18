@@ -10,6 +10,7 @@ import { detectPlatform, isValidVideoUrl } from '@/utils/platformDetector';
 import { VideoInfo, VideoMedia, FetchVideoResponse } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import DonateButton from '@/components/DonateButton';
 
 const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
 
@@ -144,7 +145,10 @@ const Index = () => {
     <div className="relative min-h-screen">
       <AnimatedBackground />
       
-      {/* Theme toggle */}
+      {/* Fixed header buttons */}
+      <div className="fixed top-4 left-4 z-50">
+        <DonateButton />
+      </div>
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
