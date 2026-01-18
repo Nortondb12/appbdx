@@ -15,6 +15,8 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
   const [selectedQuality, setSelectedQuality] = useState<VideoMedia | null>(
     video.media[0] || null
   );
+  const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const handleDownload = () => {
     if (selectedQuality) {
@@ -26,13 +28,21 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
     <Card className="glass-card overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
       <CardContent className="p-0">
         <div className="relative aspect-video bg-muted">
+          {/* Loading skeleton */}
+          {!imageLoaded && !imageError && (
+            <div className="absolute inset-0 animate-pulse bg-muted" />
+          )}
           <img
-            src={video.thumbnail}
+            src={imageError ? '/placeholder.svg' : video.thumbnail}
             alt={video.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.svg';
+            className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              setImageError(true);
+              setImageLoaded(true);
             }}
+            crossOrigin="anonymous"
+            referrerPolicy="no-referrer"
           />
           <div className="absolute top-3 left-3">
             <div className="bg-background/80 backdrop-blur-sm rounded-full p-2">
