@@ -74,113 +74,8 @@ serve(async (req) => {
             throw new Error("No audio format found");
           }
           
-          // For video downloads, use the YouTube Video Downloader API that merges video+audio
-          const requestedQuality = format?.replace(/p.*$/, "") || "720";
-          console.log("Requesting merged video+audio at quality:", requestedQuality);
-          
-          // Step 1: Get video info and render config
-          const infoResponse = await fetch(
-            `https://youtube-video-and-shorts-downloader1.p.rapidapi.com/api/getInfo?url=${encodeURIComponent(url)}`,
-            {
-              method: "GET",
-              headers: {
-                "X-RapidAPI-Key": rapidApiKey,
-                "X-RapidAPI-Host": "youtube-video-and-shorts-downloader1.p.rapidapi.com",
-              },
-            }
-          );
-          
-          const infoData = await infoResponse.json();
-          console.log("Video info response:", JSON.stringify(infoData, null, 2).substring(0, 2000));
-          
-          if (infoData.status === "fail" || infoData.error) {
-            throw new Error(infoData.message || "Failed to get video info");
-          }
-          
-          // Check for direct download formats with audio
-          if (infoData.formats && Array.isArray(infoData.formats)) {
-            // Find formats with both video and audio
-            const mergedFormats = infoData.formats.filter((f: any) => 
-              f.hasVideo && f.hasAudio && f.qualityLabel
-            );
-            
-            console.log("Found merged formats:", mergedFormats.map((f: any) => f.qualityLabel).join(", "));
-            
-            if (mergedFormats.length > 0) {
-              // Try to find exact quality match
-              let targetFormat = mergedFormats.find((f: any) => 
-                f.qualityLabel?.startsWith(requestedQuality + "p")
-              );
-              
-              // If no exact match, get the highest quality available
-              if (!targetFormat) {
-                mergedFormats.sort((a: any, b: any) => {
-                  const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
-                  const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
-                  return qualityB - qualityA;
-                });
-                targetFormat = mergedFormats[0];
-              }
-              
-              if (targetFormat?.url) {
-                console.log("Found direct merged download at:", targetFormat.qualityLabel);
-                return new Response(
-                  JSON.stringify({ status: true, downloadUrl: targetFormat.url }),
-                  { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
-              }
-            }
-          }
-          
-          // If direct formats not available, use render API to merge video+audio
-          if (infoData.render && infoData.render.formats) {
-            console.log("Using render API to merge video+audio");
-            
-            // Find the best available render format
-            const renderFormats = infoData.render.formats.filter((f: any) => f.qualityLabel);
-            
-            let targetRender = renderFormats.find((f: any) => 
-              f.qualityLabel?.startsWith(requestedQuality + "p")
-            );
-            
-            if (!targetRender && renderFormats.length > 0) {
-              renderFormats.sort((a: any, b: any) => {
-                const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
-                const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
-                return qualityB - qualityA;
-              });
-              targetRender = renderFormats[0];
-            }
-            
-            if (targetRender) {
-              // Trigger rendering to merge video+audio
-              const renderUrl = `https://youtube-video-and-shorts-downloader1.p.rapidapi.com/api/render?url=${encodeURIComponent(url)}&format=${targetRender.itag || targetRender.qualityLabel}`;
-              
-              console.log("Triggering render for:", targetRender.qualityLabel);
-              
-              const renderResponse = await fetch(renderUrl, {
-                method: "GET",
-                headers: {
-                  "X-RapidAPI-Key": rapidApiKey,
-                  "X-RapidAPI-Host": "youtube-video-and-shorts-downloader1.p.rapidapi.com",
-                },
-              });
-              
-              const renderData = await renderResponse.json();
-              console.log("Render response:", JSON.stringify(renderData, null, 2).substring(0, 1000));
-              
-              if (renderData.url || renderData.downloadUrl) {
-                return new Response(
-                  JSON.stringify({ status: true, downloadUrl: renderData.url || renderData.downloadUrl }),
-                  { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
-              }
-            }
-          }
-          
-          // Fallback: Use YTStream combined formats (will be lower quality but has audio)
-          console.log("Falling back to YTStream combined formats");
-          const ytStreamResponse = await fetch(
+          // For video downloads, use YTStream API with combined formats (video+audio)
+          const rapidResponse = await fetch(
             `https://ytstream-download-youtube-videos.p.rapidapi.com/dl?id=${ytVideoId}`,
             {
               method: "GET",
@@ -191,27 +86,78 @@ serve(async (req) => {
             }
           );
           
-          const ytStreamData = await ytStreamResponse.json();
+          const rapidData = await rapidResponse.json();
+          console.log("YTStream response keys:", Object.keys(rapidData));
           
-          if (ytStreamData.formats && Array.isArray(ytStreamData.formats)) {
-            const combinedFormats = ytStreamData.formats.filter((f: any) => 
-              f.mimeType?.includes("video/") && f.url
-            );
-            
-            if (combinedFormats.length > 0) {
-              // Sort by quality and get the best one
-              combinedFormats.sort((a: any, b: any) => {
-                const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
-                const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
-                return qualityB - qualityA;
-              });
-              
-              console.log("Using YTStream combined format:", combinedFormats[0].qualityLabel);
-              return new Response(
-                JSON.stringify({ status: true, downloadUrl: combinedFormats[0].url }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          const requestedFormat = format || "";
+          const isNoAudioRequest = requestedFormat.includes("(no audio)");
+          const cleanQuality = requestedFormat.replace(" (no audio)", "").replace(/p.*$/, "");
+          
+          console.log("Requested format:", requestedFormat, "isNoAudio:", isNoAudioRequest, "cleanQuality:", cleanQuality);
+          
+          let downloadUrl: string | null = null;
+          
+          if (isNoAudioRequest) {
+            // User explicitly wants high quality without audio - use adaptiveFormats
+            if (rapidData.adaptiveFormats && Array.isArray(rapidData.adaptiveFormats)) {
+              const videoFormats = rapidData.adaptiveFormats.filter((f: any) => 
+                f.mimeType?.includes("video/") && f.url
               );
+              
+              // Find exact quality match
+              const exactMatch = videoFormats.find((f: any) => 
+                f.qualityLabel?.startsWith(cleanQuality + "p")
+              );
+              
+              if (exactMatch) {
+                downloadUrl = exactMatch.url;
+                console.log("Found adaptive format:", exactMatch.qualityLabel);
+              } else if (videoFormats.length > 0) {
+                // Sort by quality and get highest
+                videoFormats.sort((a: any, b: any) => {
+                  const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
+                  const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
+                  return qualityB - qualityA;
+                });
+                downloadUrl = videoFormats[0].url;
+                console.log("Using highest adaptive format:", videoFormats[0].qualityLabel);
+              }
             }
+          } else {
+            // User wants video WITH audio - use combined formats
+            if (rapidData.formats && Array.isArray(rapidData.formats)) {
+              const combinedFormats = rapidData.formats.filter((f: any) => 
+                f.mimeType?.includes("video/") && f.url
+              );
+              
+              console.log("Available combined formats:", combinedFormats.map((f: any) => f.qualityLabel).join(", "));
+              
+              // Try to find exact quality match
+              const exactMatch = combinedFormats.find((f: any) => 
+                f.qualityLabel?.startsWith(cleanQuality + "p")
+              );
+              
+              if (exactMatch) {
+                downloadUrl = exactMatch.url;
+                console.log("Found exact combined format:", exactMatch.qualityLabel);
+              } else if (combinedFormats.length > 0) {
+                // Sort by quality and get highest available
+                combinedFormats.sort((a: any, b: any) => {
+                  const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
+                  const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
+                  return qualityB - qualityA;
+                });
+                downloadUrl = combinedFormats[0].url;
+                console.log("Using highest combined format:", combinedFormats[0].qualityLabel);
+              }
+            }
+          }
+          
+          if (downloadUrl) {
+            return new Response(
+              JSON.stringify({ status: true, downloadUrl }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
           }
           
           throw new Error("No download URL found - please try a different quality");
@@ -332,63 +278,62 @@ serve(async (req) => {
     // Get media links from FastSaverAPI
     let media = transformMediaLinks(data);
     
-    // For YouTube videos, fetch available qualities using the new merged API
+    // For YouTube videos, fetch available qualities using YTStream API
     if (data.hosting === "youtube" && media.length === 0) {
       const rapidApiKey = Deno.env.get("RAPIDAPI_KEY");
       
       if (rapidApiKey) {
         try {
-          console.log("Fetching YouTube qualities using merged API for:", url);
+          // Extract video ID from YouTube URL
+          const videoIdMatch = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+          const ytVideoId = videoIdMatch ? videoIdMatch[1] : null;
           
-          // Use the new API that provides merged video+audio downloads
-          const infoResponse = await fetch(
-            `https://youtube-video-and-shorts-downloader1.p.rapidapi.com/api/getInfo?url=${encodeURIComponent(url)}`,
-            {
-              method: "GET",
-              headers: {
-                "X-RapidAPI-Key": rapidApiKey,
-                "X-RapidAPI-Host": "youtube-video-and-shorts-downloader1.p.rapidapi.com",
-              },
-            }
-          );
-          
-          const infoData = await infoResponse.json();
-          console.log("Merged API qualities response:", JSON.stringify(infoData, null, 2).substring(0, 1500));
-          
-          if (infoData.status !== "fail" && !infoData.error) {
-            const qualitySet = new Set<string>();
-            const qualities: Array<{quality: string; format: string}> = [];
+          if (ytVideoId) {
+            console.log("Fetching YouTube qualities using YTStream for:", ytVideoId);
             
-            // Get all available qualities from formats (merged video+audio)
-            if (infoData.formats && Array.isArray(infoData.formats)) {
-              for (const format of infoData.formats) {
-                if (format.qualityLabel && format.hasVideo) {
-                  const baseQuality = format.qualityLabel.replace(/\d+$/, ''); // Remove fps suffix
-                  if (!qualitySet.has(format.qualityLabel)) {
-                    qualitySet.add(format.qualityLabel);
-                    qualities.push({
-                      quality: format.qualityLabel,
-                      format: "video"
-                    });
+            const rapidResponse = await fetch(
+              `https://ytstream-download-youtube-videos.p.rapidapi.com/dl?id=${ytVideoId}`,
+              {
+                method: "GET",
+                headers: {
+                  "X-RapidAPI-Key": rapidApiKey,
+                  "X-RapidAPI-Host": "ytstream-download-youtube-videos.p.rapidapi.com",
+                },
+              }
+            );
+            
+            const rapidData = await rapidResponse.json();
+            console.log("YTStream qualities response - formats:", rapidData.formats?.length, "adaptive:", rapidData.adaptiveFormats?.length);
+            
+            const qualityMap = new Map<string, { quality: string; hasAudio: boolean }>();
+            
+            // First, add combined formats (WITH audio) - these are priority
+            if (rapidData.formats && Array.isArray(rapidData.formats)) {
+              for (const format of rapidData.formats) {
+                if (format.qualityLabel && format.mimeType?.includes("video/")) {
+                  const baseQuality = format.qualityLabel;
+                  if (!qualityMap.has(baseQuality)) {
+                    qualityMap.set(baseQuality, { quality: baseQuality, hasAudio: true });
                   }
                 }
               }
             }
             
-            // Also check render formats for higher qualities
-            if (infoData.render?.formats && Array.isArray(infoData.render.formats)) {
-              for (const format of infoData.render.formats) {
-                if (format.qualityLabel && !qualitySet.has(format.qualityLabel)) {
-                  qualitySet.add(format.qualityLabel);
-                  qualities.push({
-                    quality: format.qualityLabel,
-                    format: "video"
-                  });
+            // Then add adaptive formats (NO audio) for higher qualities
+            if (rapidData.adaptiveFormats && Array.isArray(rapidData.adaptiveFormats)) {
+              for (const format of rapidData.adaptiveFormats) {
+                if (format.qualityLabel && format.mimeType?.includes("video/")) {
+                  const baseQuality = format.qualityLabel;
+                  // Only add if we don't already have a combined format for this quality
+                  if (!qualityMap.has(baseQuality)) {
+                    qualityMap.set(baseQuality, { quality: baseQuality + " (no audio)", hasAudio: false });
+                  }
                 }
               }
             }
             
-            // Sort by resolution (highest first)
+            // Convert to array and sort by resolution
+            const qualities = Array.from(qualityMap.values());
             qualities.sort((a, b) => {
               const resA = parseInt(a.quality.replace(/\D/g, '') || "0");
               const resB = parseInt(b.quality.replace(/\D/g, '') || "0");
@@ -396,8 +341,11 @@ serve(async (req) => {
             });
             
             if (qualities.length > 0) {
-              media = qualities;
-              console.log("Found merged qualities:", qualities.map(q => q.quality).join(", "));
+              media = qualities.map(q => ({
+                quality: q.quality,
+                format: "video",
+              }));
+              console.log("Found qualities:", qualities.map(q => q.quality).join(", "));
             }
             
             // Add audio option
@@ -408,22 +356,18 @@ serve(async (req) => {
           }
         } catch (rapidError) {
           console.error("Error fetching YouTube qualities:", rapidError);
-          // Fall through to fallback
         }
       }
       
-      // Fallback to basic qualities if RapidAPI fails or returns nothing
+      // Fallback to basic qualities if RapidAPI fails
       if (media.length === 0) {
         console.log("Using fallback quality list");
-        const qualities = ["1080p", "720p", "480p", "360p"];
-        media = qualities.map(quality => ({
-          quality: quality,
-          format: "video",
-        }));
-        media.push({
-          quality: "Audio (MP3)",
-          format: "mp3",
-        });
+        media = [
+          { quality: "720p", format: "video" },
+          { quality: "480p", format: "video" },
+          { quality: "360p", format: "video" },
+          { quality: "Audio (MP3)", format: "mp3" },
+        ];
       }
     }
 
