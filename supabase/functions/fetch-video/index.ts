@@ -34,8 +34,8 @@ serve(async (req) => {
           
           console.log("Calling RapidAPI for YouTube download:", url, "format:", format);
           
-          // Extract video ID from YouTube URL
-          const videoIdMatch = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+          // Extract video ID from YouTube URL (supports regular, shorts, and youtu.be formats)
+          const videoIdMatch = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
           const ytVideoId = videoIdMatch ? videoIdMatch[1] : null;
           
           if (!ytVideoId) {
