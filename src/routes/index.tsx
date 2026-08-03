@@ -1,1 +1,1 @@
-const Index = () => <div>Implement client-side validation that blocks non-URL inputs before calling POST /fetch and shows an error message.</div>; export default Index;
+const Index = () => <div>Hi</div>; export default Index;
