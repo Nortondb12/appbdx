@@ -25,21 +25,35 @@ export function VideoUrlInput({
   const [url, setUrl] = useState('');
   const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (url.trim()) {
       const platform = detectPlatform(url);
       setDetectedPlatform(platform !== 'unknown' ? platform : null);
+      if (platform === 'unknown' && url.length > 5) {
+        setLocalError('Please enter a valid video URL from Facebook, Instagram, YouTube, or TikTok');
+      } else {
+        setLocalError(null);
+      }
     } else {
       setDetectedPlatform(null);
+      setLocalError(null);
     }
   }, [url]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (url.trim()) {
-      onSubmit(url.trim());
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
+
+    if (detectPlatform(trimmedUrl) === 'unknown') {
+      setLocalError('Please enter a valid video URL from Facebook, Instagram, YouTube, or TikTok');
+      return;
     }
+
+    setLocalError(null);
+    onSubmit(trimmedUrl);
   };
 
   return (
@@ -88,11 +102,11 @@ export function VideoUrlInput({
       </div>
 
       {/* Error message */}
-      {error && (
+      {(error || localError) && (
         <div className="flex items-center gap-2 text-sm text-destructive animate-fade-up">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <span>{error}</span>
-          {showRetry && onRetry && (
+          <span>{localError || error}</span>
+          {showRetry && onRetry && !localError && (
             <Button
               type="button"
               variant="ghost"
@@ -110,7 +124,7 @@ export function VideoUrlInput({
       {/* Submit button */}
       <Button
         type="submit"
-        disabled={!url.trim() || isLoading}
+        disabled={!url.trim() || isLoading || !!localError}
         className={cn(
           "w-full h-12 text-base font-medium rounded-xl",
           "gradient-btn text-primary-foreground",
