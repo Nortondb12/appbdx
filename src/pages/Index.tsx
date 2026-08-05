@@ -160,7 +160,7 @@ const Index = () => {
             <Download className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-            আমাদের প্রজেক্টের জন্য একটি লোগো তৈরি করুন
+            Make a new logo
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
             Download videos from your favorite platforms quickly and easily
