@@ -1,7 +1,16 @@
 import { useState } from 'react';
-import { Download, Loader2, Clock, Play } from 'lucide-react';
+import { Download, Loader2, Clock, Play, Check } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { VideoInfo, VideoMedia } from '@/types/video';
 import { cn } from '@/lib/utils';
 
@@ -82,26 +91,79 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
 
             {/* Quality selection */}
             {video.media.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Select quality</p>
-                <div className="flex flex-wrap gap-2">
-                  {video.media.map((media, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedMedia(media)}
-                      className={cn(
-                        "px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200",
-                        "border-2",
-                        selectedMedia === media
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                      )}
-                    >
-                      {media.quality || media.format || `Option ${index + 1}`}
-                      {media.size && ` (${media.size})`}
-                    </button>
-                  ))}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium text-muted-foreground">Select Quality</Label>
+                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded-md bg-secondary">
+                    {video.media.length} options available
+                  </span>
                 </div>
+
+                {video.media.length <= 4 ? (
+                  /* Radio selector for fewer options */
+                  <RadioGroup 
+                    value={video.media.indexOf(selectedMedia! || video.media[0]).toString()} 
+                    onValueChange={(val) => setSelectedMedia(video.media[parseInt(val)])}
+                    className="grid grid-cols-2 gap-3"
+                  >
+                    {video.media.map((media, index) => (
+                      <div key={index}>
+                        <RadioGroupItem
+                          value={index.toString()}
+                          id={`quality-${index}`}
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor={`quality-${index}`}
+                          className={cn(
+                            "flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all",
+                            selectedMedia === media && "border-primary bg-primary/5"
+                          )}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-sm font-bold">
+                              {media.quality || media.format || `Option ${index + 1}`}
+                            </span>
+                            {media.size && (
+                              <span className="text-[10px] text-muted-foreground uppercase">
+                                {media.size}
+                              </span>
+                            )}
+                          </div>
+                          {selectedMedia === media && (
+                            <Check className="w-3 h-3 text-primary mt-1" />
+                          )}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                ) : (
+                  /* Dropdown for many options */
+                  <Select
+                    value={video.media.indexOf(selectedMedia! || video.media[0]).toString()}
+                    onValueChange={(val) => setSelectedMedia(video.media[parseInt(val)])}
+                  >
+                    <SelectTrigger className="w-full h-12 rounded-xl border-2 bg-secondary/30">
+                      <SelectValue placeholder="Select quality" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      {video.media.map((media, index) => (
+                        <SelectItem key={index} value={index.toString()} className="rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {media.quality || media.format || `Option ${index + 1}`}
+                            </span>
+                            {media.size && (
+                              <span className="text-xs text-muted-foreground">
+                                ({media.size})
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             )}
           </div>
