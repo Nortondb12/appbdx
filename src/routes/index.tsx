@@ -1,1 +1,1 @@
-const Index = () => <div>Add a selector so I can choose one of the three logo styles and apply it to the header permanently.</div>; export default Index;
+const Index = () => <div>Create a visually appealing and modern UI design for the homepage that enhances user experience and clearly presents key information. Focus on a clean layout, intuitive navigation, and an attractive color scheme.</div>; export default Index;
