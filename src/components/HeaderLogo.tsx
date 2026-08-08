@@ -23,7 +23,7 @@ interface LogoConfig {
   hover: HoverStyle;
 }
 
-const DEFAULTS: LogoConfig = { glow: 60, size: 144, hover: 'scale' };
+const DEFAULTS: LogoConfig = { glow: 30, size: 120, hover: 'scale' };
 const STORAGE_KEY = 'avd-logo-config';
 
 const hoverClasses: Record<HoverStyle, string> = {
