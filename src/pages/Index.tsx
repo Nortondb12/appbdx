@@ -11,7 +11,7 @@ import { VideoInfo, VideoMedia, FetchVideoResponse } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import DonateButton from '@/components/DonateButton';
-import avdLogo from '@/assets/avd-logo.png';
+import { HeaderLogo } from '@/components/HeaderLogo';
 
 const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
 
@@ -162,16 +162,7 @@ const Index = () => {
           
           <div className="flex flex-col items-center gap-10">
             {/* Brand Logo */}
-            <div className="relative group">
-              <div className="absolute -inset-6 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 rounded-full blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
-              <img
-                src={avdLogo}
-                alt="AVD Pro logo — all video downloader"
-                width={160}
-                height={160}
-                className="relative w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-[0_20px_40px_rgba(59,130,246,0.35)] transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
+            <HeaderLogo />
 
             <div className="max-w-3xl">
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 leading-[0.9]">
