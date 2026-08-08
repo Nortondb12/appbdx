@@ -1,1 +1,1 @@
-const Index = () => <div>কি ধরনের লোগো তৈরি করলেন? এটা কোন লোগো হলো? দুই একটা লোগো তৈরি করে না আমাকে দেখান। তারপর আমি প্রশ্ন করে বলব কোনটা ভালো হয়েছে।</div>; export default Index;
+const Index = () => <div>Add a selector so I can choose one of the three logo styles and apply it to the header permanently.</div>; export default Index;
