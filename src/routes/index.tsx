@@ -1,1 +1,1 @@
-const Index = () => <div>Add a logo</div>; export default Index;
+const Index = () => <div>Crie um belo logotipo para nossa marca que a torne mais bonita e atraente, e adicione uma UI mais moderna à página inicial.</div>; export default Index;
