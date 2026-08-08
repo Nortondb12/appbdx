@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import avdLogo from '@/assets/avd-logo.png';
+import minimalistLogo from '@/assets/logo-minimalist.svg';
 
 type HoverStyle = 'scale' | 'rotate' | 'float' | 'none';
 
