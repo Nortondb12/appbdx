@@ -167,7 +167,7 @@ const Index = () => {
             <div className="max-w-3xl">
               <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-[-0.04em] mb-6 leading-[0.85] text-balance">
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-x drop-shadow-[0_10px_20px_rgba(var(--primary-rgb),0.2)]">
-                  AVD Pro
+                  AppBDX
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground/90 font-medium max-w-2xl mx-auto leading-relaxed text-balance">

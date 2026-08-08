@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import avdLogo from '@/assets/avd-logo.png';
+import minimalistLogo from '@/assets/logo-minimalist.svg';
 
 type HoverStyle = 'scale' | 'rotate' | 'float' | 'none';
 
@@ -23,7 +23,7 @@ interface LogoConfig {
   hover: HoverStyle;
 }
 
-const DEFAULTS: LogoConfig = { glow: 60, size: 144, hover: 'scale' };
+const DEFAULTS: LogoConfig = { glow: 30, size: 120, hover: 'scale' };
 const STORAGE_KEY = 'avd-logo-config';
 
 const hoverClasses: Record<HoverStyle, string> = {
@@ -84,7 +84,7 @@ export const HeaderLogo = () => {
         </div>
       ) : (
         <img
-          src={avdLogo}
+          src={minimalistLogo}
           alt="AVD Pro logo — all video downloader"
           onError={() => setFailed(true)}
           style={{ width: config.size, height: config.size }}
