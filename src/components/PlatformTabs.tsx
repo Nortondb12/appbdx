@@ -18,17 +18,17 @@ const platforms: { id: PlatformTab; name: string; icon: React.ReactNode }[] = [
 
 export function PlatformTabs({ selectedPlatform, onSelectPlatform }: PlatformTabsProps) {
   return (
-    <div className="flex items-center justify-center gap-1 p-1 bg-secondary/30 dark:bg-secondary/20 backdrop-blur-sm rounded-full">
+    <div className="flex items-center justify-center gap-1 p-1.5 bg-white/5 dark:bg-black/20 backdrop-blur-xl rounded-2xl border border-white/10">
       {platforms.map((platform) => (
         <button
           key={platform.id}
           onClick={() => onSelectPlatform(platform.id)}
           className={cn(
-            "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300",
-            "hover:bg-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            "relative px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-500",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             selectedPlatform === platform.id
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
           )}
         >
           <span className="flex items-center gap-2">

@@ -164,14 +164,19 @@ const Index = () => {
             {/* Brand Logo */}
             <HeaderLogo />
 
-            <div className="max-w-3xl">
-              <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-[-0.04em] mb-6 leading-[0.85] text-balance">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-x drop-shadow-[0_10px_20px_rgba(var(--primary-rgb),0.2)]">
+            <div className="max-w-3xl space-y-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-md animate-fade-up">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-xs font-bold tracking-widest uppercase text-primary">System Online</span>
+              </div>
+
+              <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-6 leading-[0.85] text-balance">
+                <span className="bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground/80 to-foreground/50 drop-shadow-2xl">
                   AppBDX
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground/90 font-medium max-w-2xl mx-auto leading-relaxed text-balance">
-                Download your favorite content from <span className="text-foreground font-bold border-b-2 border-primary/30 pb-0.5">any social media</span> with stunning quality.
+              <p className="text-xl md:text-2xl text-muted-foreground/80 font-medium max-w-2xl mx-auto leading-relaxed text-balance">
+                Experience the <span className="text-foreground font-bold">digital frontier</span> of content downloading with high-fidelity quality.
               </p>
             </div>
           </div>
