@@ -32,7 +32,7 @@ const Index = () => {
   const [originalUrl, setOriginalUrl] = useState('');
   const [lastAttemptedUrl, setLastAttemptedUrl] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformTab>('all');
-  const [logoStyle, setLogoStyle] = useState<'modern' | 'minimalist' | 'glass'>('modern');
+  
 
   const { history, addToHistory, clearHistory } = useDownloadHistory();
 
