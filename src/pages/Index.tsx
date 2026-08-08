@@ -156,9 +156,12 @@ const Index = () => {
       <main className="relative z-10 min-h-screen flex flex-col items-center px-4 py-12 md:py-20">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-up">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-6 group relative">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 mb-6 group relative overflow-hidden">
             <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
-            <Download className="w-8 h-8 text-primary relative z-10 transition-transform duration-300 group-hover:scale-110" />
+            <div className="relative z-10 flex flex-col items-center justify-center">
+              <Download className="w-8 h-8 text-primary transition-transform duration-300 group-hover:scale-110 mb-0.5" />
+              <span className="text-[10px] font-black tracking-tighter text-primary/80 uppercase leading-none">AppBDX</span>
+            </div>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-x">
