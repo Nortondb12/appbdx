@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Heart, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -17,6 +17,8 @@ interface DonateModalProps {
 const DonateModal = ({ open, onOpenChange }: DonateModalProps) => {
   const [copied, setCopied] = useState(false);
   const merchantNumber = "01805603555";
+  // Configurable donation link (bKash payment / any donation page)
+  const donationLink = "https://shop.bkash.com/alamin-dev01805603555/pay";
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(merchantNumber);
@@ -72,6 +74,18 @@ const DonateModal = ({ open, onOpenChange }: DonateModalProps) => {
             </Button>
           </div>
           
+          {/* Call to action */}
+          <Button
+            asChild
+            className="w-full rounded-2xl bg-[#E2136E] hover:bg-[#c40f5f] text-white font-semibold gap-2 shadow-lg transition-all duration-300 hover:scale-[1.02]"
+          >
+            <a href={donationLink} target="_blank" rel="noopener noreferrer">
+              <Heart className="h-4 w-4" />
+              Donate Now
+              <ExternalLink className="h-4 w-4 opacity-70" />
+            </a>
+          </Button>
+
           {/* Thank you message */}
           <div className="text-center space-y-1 pt-2">
             <p className="text-sm text-muted-foreground">
