@@ -202,5 +202,3 @@ export const HeaderLogo = () => {
 };
 
 export default HeaderLogo;
-
-export default HeaderLogo;
