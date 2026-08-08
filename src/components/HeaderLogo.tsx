@@ -84,7 +84,7 @@ export const HeaderLogo = () => {
         </div>
       ) : (
         <img
-          src={avdLogo}
+          src={minimalistLogo}
           alt="AVD Pro logo — all video downloader"
           onError={() => setFailed(true)}
           style={{ width: config.size, height: config.size }}
