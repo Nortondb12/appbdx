@@ -11,6 +11,7 @@ import { VideoInfo, VideoMedia, FetchVideoResponse } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import DonateButton from '@/components/DonateButton';
+import avdLogo from '@/assets/avd-logo.png';
 
 const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
 
@@ -31,7 +32,7 @@ const Index = () => {
   const [originalUrl, setOriginalUrl] = useState('');
   const [lastAttemptedUrl, setLastAttemptedUrl] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformTab>('all');
-  const [logoStyle, setLogoStyle] = useState<'modern' | 'minimalist' | 'glass'>('modern');
+  
 
   const { history, addToHistory, clearHistory } = useDownloadHistory();
 
@@ -160,51 +161,16 @@ const Index = () => {
           <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse" />
           
           <div className="flex flex-col items-center gap-10">
-            {/* Logo Style Display & Selector */}
+            {/* Brand Logo */}
             <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              
-              <div className="relative flex items-center gap-8 bg-white/5 dark:bg-black/20 backdrop-blur-2xl p-6 rounded-[2.5rem] border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
-                {/* Visual Options Labels */}
-                <div className="hidden lg:flex flex-col items-end gap-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase opacity-60">
-                  <span>INTERFACE</span>
-                  <span>EVOLUTION</span>
-                </div>
-
-                <div className="flex gap-6">
-                  <button 
-                    onClick={() => setLogoStyle('modern')}
-                    className={`relative w-20 h-20 rounded-3xl bg-gradient-to-br from-primary via-blue-600 to-indigo-600 flex items-center justify-center shadow-[0_10px_20px_-5px_rgba(59,130,246,0.5)] transform transition-all duration-500 ${logoStyle === 'modern' ? 'scale-110 ring-2 ring-white/50 z-20' : 'opacity-40 hover:opacity-100 hover:scale-105 grayscale hover:grayscale-0'}`}
-                  >
-                    <Download className="w-10 h-10 text-white drop-shadow-lg" />
-                    {logoStyle === 'modern' && <div className="absolute -top-2 -right-2 bg-white text-primary text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-md">ACTIVE</div>}
-                  </button>
-
-                  <button 
-                    onClick={() => setLogoStyle('minimalist')}
-                    className={`relative w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all duration-500 ${logoStyle === 'minimalist' ? 'border-primary scale-110 ring-2 ring-primary/20 bg-primary/10 z-20' : 'border-primary/20 opacity-40 hover:opacity-100 hover:scale-105'}`}
-                  >
-                    <Download className={`w-8 h-8 ${logoStyle === 'minimalist' ? 'text-primary' : 'text-primary/40'}`} />
-                    {logoStyle === 'minimalist' && <div className="absolute -top-2 -right-2 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-md">ACTIVE</div>}
-                  </button>
-
-                  <button 
-                    onClick={() => setLogoStyle('glass')}
-                    className={`relative w-20 h-20 rounded-3xl backdrop-blur-3xl border flex items-center justify-center shadow-2xl transition-all duration-500 ${logoStyle === 'glass' ? 'bg-white/20 border-white/50 scale-110 ring-2 ring-white/30 z-20' : 'bg-white/5 border-white/10 opacity-40 hover:opacity-100 hover:scale-105'}`}
-                  >
-                    <div className="relative">
-                      <Download className={`w-10 h-10 ${logoStyle === 'glass' ? 'text-primary animate-pulse' : 'text-primary/30'}`} />
-                      {logoStyle === 'glass' && <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-accent rounded-full border-2 border-white/50 animate-bounce" />}
-                    </div>
-                    {logoStyle === 'glass' && <div className="absolute -top-2 -right-2 bg-accent text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-md">ACTIVE</div>}
-                  </button>
-                </div>
-
-                <div className="hidden lg:flex flex-col items-start gap-1 text-[10px] font-bold tracking-widest text-primary uppercase opacity-60">
-                  <span>PREMIUM</span>
-                  <span>AVD PRO</span>
-                </div>
-              </div>
+              <div className="absolute -inset-6 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 rounded-full blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
+              <img
+                src={avdLogo}
+                alt="AVD Pro logo — all video downloader"
+                width={160}
+                height={160}
+                className="relative w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-[0_20px_40px_rgba(59,130,246,0.35)] transition-transform duration-500 group-hover:scale-105"
+              />
             </div>
 
             <div className="max-w-3xl">
