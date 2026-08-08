@@ -63,12 +63,12 @@ export function VideoUrlInput({
         {/* Input container */}
         <div
           className={cn(
-            "relative flex items-center rounded-2xl transition-all duration-300",
-            "bg-secondary/50 dark:bg-secondary/30 backdrop-blur-sm",
-            "border-2",
+            "relative flex items-center rounded-2xl transition-all duration-500",
+            "bg-white/5 dark:bg-black/20 backdrop-blur-md",
+            "border border-white/10 dark:border-white/5",
             isFocused 
-              ? "border-primary/50 shadow-lg shadow-primary/10" 
-              : "border-transparent",
+              ? "border-primary/40 ring-4 ring-primary/10 shadow-2xl shadow-primary/20 scale-[1.01]" 
+              : "hover:border-white/20",
             error && "border-destructive/50"
           )}
         >
