@@ -23,7 +23,7 @@ interface LogoConfig {
   hover: HoverStyle;
 }
 
-const DEFAULTS: LogoConfig = { glow: 30, size: 120, hover: 'scale' };
+const DEFAULTS: LogoConfig = { glow: 45, size: 140, hover: 'scale' };
 const STORAGE_KEY = 'avd-logo-config';
 
 const hoverClasses: Record<HoverStyle, string> = {
@@ -84,11 +84,11 @@ export const HeaderLogo = () => {
         </div>
       ) : (
         <img
-          src={minimalistLogo}
-          alt="AVD Pro logo — all video downloader"
+          src={premiumLogo}
+          alt="AppBDX Premium Logo"
           onError={() => setFailed(true)}
           style={{ width: config.size, height: config.size }}
-          className={`relative object-contain transition-all duration-500 cursor-pointer animate-float ${hoverClasses[config.hover]}`}
+          className={`relative object-contain transition-all duration-700 cursor-pointer drop-shadow-2xl ${hoverClasses[config.hover]}`}
         />
       )}
 
