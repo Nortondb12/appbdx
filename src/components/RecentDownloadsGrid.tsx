@@ -54,9 +54,9 @@ export function RecentDownloadsGrid({ history, onClear }: RecentDownloadsGridPro
             <div
               key={item.id}
               className={cn(
-                "group flex-shrink-0 w-64 rounded-xl overflow-hidden",
-                "bg-card border border-border/50 hover:border-border",
-                "transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
+                "group flex-shrink-0 w-72 rounded-2xl overflow-hidden",
+                "glass-card border-white/10 hover:border-white/30",
+                "transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2",
                 "snap-start"
               )}
             >
