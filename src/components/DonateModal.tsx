@@ -53,19 +53,21 @@ const DonateModal = ({ open, onOpenChange }: DonateModalProps) => {
           </p>
           
           {/* Merchant number with copy */}
-          <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-4 py-2">
-            <span className="text-sm text-muted-foreground">Merchant:</span>
-            <span className="font-mono font-semibold">{merchantNumber}</span>
+          <div className="flex items-center gap-3 bg-white/10 dark:bg-black/40 backdrop-blur-md rounded-2xl px-6 py-3 border border-white/10 shadow-inner group">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-widest font-bold text-[#E2136E]">Merchant Number</span>
+              <span className="font-mono font-bold text-lg">{merchantNumber}</span>
+            </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[#E2136E]/10"
+              className="h-10 w-10 rounded-xl hover:bg-[#E2136E]/20 transition-all duration-300"
               onClick={handleCopy}
             >
               {copied ? (
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-5 w-5 text-green-500 animate-in zoom-in" />
               ) : (
-                <Copy className="h-4 w-4" />
+                <Copy className="h-5 w-5 opacity-50 group-hover:opacity-100 transition-opacity" />
               )}
             </Button>
           </div>
