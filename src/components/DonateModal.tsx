@@ -27,7 +27,7 @@ const DonateModal = ({ open, onOpenChange }: DonateModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white/80 dark:bg-black/80 backdrop-blur-xl border-white/20 shadow-2xl animate-in fade-in zoom-in duration-500 rounded-[2rem]">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-semibold">
             Support This Project ☕
