@@ -88,24 +88,44 @@
 
 @layer components {
   .glass-card {
-    @apply bg-card/70 dark:bg-card/40 backdrop-blur-2xl border border-white/20 dark:border-white/5;
+    @apply bg-card/60 dark:bg-card/30 backdrop-blur-[32px] border border-white/20 dark:border-white/10;
     box-shadow: 
       0 8px 32px 0 rgba(31, 38, 135, 0.1),
-      0 1px 2px 0 rgba(255, 255, 255, 0.1) inset;
+      inset 0 0 80px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .premium-border {
+    @apply relative overflow-hidden rounded-[2.5rem];
+  }
+
+  .premium-border::before {
+    content: '';
+    @apply absolute -inset-[2px] bg-gradient-to-r from-primary/50 via-accent/50 to-primary/50 -z-10 animate-gradient-x opacity-0 transition-opacity duration-700;
+  }
+
+  .premium-border:hover::before {
+    @apply opacity-100;
   }
 
   .gradient-btn {
-    @apply relative overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-[0.98];
+    @apply relative overflow-hidden transition-all duration-700 hover:scale-[1.02] active:scale-[0.98] rounded-2xl;
     background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-    box-shadow: 0 10px 20px -10px hsl(var(--primary) / 0.5);
+    box-shadow: 
+      0 0 0 1px hsl(var(--primary) / 0.2),
+      0 10px 30px -10px hsl(var(--primary) / 0.5);
   }
 
-  .gradient-btn:hover {
-    box-shadow: 0 15px 25px -10px hsl(var(--primary) / 0.6);
+  .gradient-btn::after {
+    content: '';
+    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300;
+  }
+
+  .gradient-btn:hover::after {
+    @apply opacity-100;
   }
 
   .gradient-btn:disabled {
-    @apply opacity-50 cursor-not-allowed transform-none;
+    @apply opacity-50 cursor-not-allowed transform-none shadow-none;
   }
 }
 
