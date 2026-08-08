@@ -162,26 +162,35 @@ const Index = () => {
           <div className="flex flex-col items-center gap-6 mb-8">
             <div className="flex gap-4">
               {/* Option 1: Modern Abstract */}
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform cursor-pointer group">
-                <Download className="w-8 h-8 text-white group-hover:animate-bounce" />
-              </div>
+              <button 
+                onClick={() => setLogoStyle('modern')}
+                className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg transform transition-all duration-300 ${logoStyle === 'modern' ? 'scale-110 ring-4 ring-primary/20' : 'opacity-50 hover:opacity-100 hover:scale-105'}`}
+              >
+                <Download className="w-8 h-8 text-white" />
+              </button>
               {/* Option 2: Minimalist Ring */}
-              <div className="w-16 h-16 rounded-full border-2 border-primary/30 flex items-center justify-center hover:border-primary transition-colors cursor-pointer group">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Download className="w-6 h-6 text-primary" />
+              <button 
+                onClick={() => setLogoStyle('minimalist')}
+                className={`w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${logoStyle === 'minimalist' ? 'border-primary scale-110 ring-4 ring-primary/10' : 'border-primary/30 opacity-50 hover:opacity-100 hover:scale-105'}`}
+              >
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${logoStyle === 'minimalist' ? 'bg-primary/20' : 'bg-primary/5'}`}>
+                  <Download className={`w-6 h-6 ${logoStyle === 'minimalist' ? 'text-primary' : 'text-primary/70'}`} />
                 </div>
-              </div>
+              </button>
               {/* Option 3: Glassmorphism */}
-              <div className="w-16 h-16 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-xl hover:bg-white/10 transition-colors cursor-pointer">
+              <button 
+                onClick={() => setLogoStyle('glass')}
+                className={`w-16 h-16 rounded-2xl backdrop-blur-xl border flex items-center justify-center shadow-xl transition-all duration-300 ${logoStyle === 'glass' ? 'bg-white/20 border-white/40 scale-110 ring-4 ring-white/10' : 'bg-white/5 border-white/20 opacity-50 hover:opacity-100 hover:scale-105'}`}
+              >
                 <div className="relative">
-                  <Download className="w-8 h-8 text-primary/80" />
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-ping" />
+                  <Download className={`w-8 h-8 ${logoStyle === 'glass' ? 'text-primary' : 'text-primary/60'}`} />
+                  {logoStyle === 'glass' && <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-ping" />}
                 </div>
-              </div>
+              </button>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-[10px] font-black tracking-[0.3em] text-primary/60 uppercase mb-1">DESIGN OPTIONS</span>
-              <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+              <span className="text-[10px] font-black tracking-[0.3em] text-primary/60 uppercase mb-1">SELECT LOGO STYLE</span>
+              <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             </div>
           </div>
 
