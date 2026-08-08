@@ -193,8 +193,8 @@ const Index = () => {
 
         {/* Centerpiece Input Card */}
         <div className="w-full max-w-2xl mb-16 animate-fade-up-delay-2 perspective-1000">
-          <div className="glass-card rounded-[3rem] p-2 md:p-3 shadow-[0_30px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.4)] border-white/10 dark:border-white/5 overflow-hidden group hover:shadow-primary/5 transition-all duration-700">
-            <div className="bg-background/40 backdrop-blur-3xl rounded-[2.5rem] p-6 md:p-12 transition-all duration-500 group-hover:bg-background/50">
+          <div className="premium-border glass-card p-1 shadow-2xl dark:shadow-black/50 group transition-all duration-700">
+            <div className="bg-background/40 backdrop-blur-3xl rounded-[2.3rem] p-6 md:p-12 transition-all duration-700 group-hover:bg-background/20">
               <VideoUrlInput
                 onSubmit={handleFetchVideo}
                 isLoading={isLoading}
