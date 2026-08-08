@@ -34,14 +34,17 @@ const DonateModal = ({ open, onOpenChange }: DonateModalProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex flex-col items-center gap-4 py-4">
+        <div className="flex flex-col items-center gap-6 py-6">
           {/* QR Code */}
-          <div className="rounded-xl overflow-hidden border-4 border-[#E2136E]/20 shadow-lg">
-            <img 
-              src="/images/bkash-qr.png" 
-              alt="bKash QR Code" 
-              className="w-56 h-56 object-contain bg-white"
-            />
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#E2136E] to-accent rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-white p-2 transition-transform duration-500 hover:scale-105">
+              <img 
+                src="/images/bkash-qr.png" 
+                alt="bKash QR Code" 
+                className="w-56 h-56 object-contain"
+              />
+            </div>
           </div>
           
           {/* Scan instruction */}
