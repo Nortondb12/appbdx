@@ -1,0 +1,31 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Multi-layered gradients for depth -->
+    <linearGradient id="glass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="50%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+    <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Outer glowing ring -->
+  <circle cx="256" cy="256" r="240" stroke="#3B82F6" stroke-width="4" stroke-opacity="0.3" filter="url(#glow-filter)"/>
+  
+  <!-- Background Plate (Glass Effect) -->
+  <rect x="30" y="30" width="452" height="452" rx="110" fill="url(#glass-grad)" stroke="url(#border-grad)" stroke-width="12"/>
+  
+  <!-- Main Icon: Stronger visibility with high contrast -->
+  <g filter="url(#glow-filter)">
+    <path d="M256 100L400 350H320V440H192V350H112L256 100Z" fill="white" />
+    <path d="M256 150L350 310H280V400H232V310H162L256 150Z" fill="#3B82F6" />
+  </g>
+</svg>
