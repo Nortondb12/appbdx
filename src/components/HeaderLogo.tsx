@@ -70,7 +70,7 @@ export const HeaderLogo = () => {
   return (
     <div className="relative group">
       <div
-        className="absolute -inset-6 bg-gradient-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-2xl transition-opacity duration-700 pointer-events-none"
+        className="absolute -inset-8 bg-gradient-to-r from-primary/60 via-accent/40 to-primary/60 rounded-full blur-3xl transition-opacity duration-700 pointer-events-none"
         style={{ opacity: glowOpacity }}
       />
 
