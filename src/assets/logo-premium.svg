@@ -27,8 +27,8 @@
   <!-- Main Icon: Modernized Download/Arrow Symbol -->
   <g filter="url(#glow-filter)">
     <!-- The "A" and Arrow Fusion -->
-    <path d="M256 120L380 340H300V420H212V340H132L256 120Z" fill="white" fill-opacity="0.9"/>
-    <path d="M256 160L340 310H280V390H232V310H172L256 160Z" fill="#3B82F6" fill-opacity="0.6"/>
+    <path d="M256 120L380 340H300V420H212V340H132L256 120Z" fill="white" fill-opacity="1"/>
+    <path d="M256 160L340 310H280V390H232V310H172L256 160Z" fill="#60A5FA" fill-opacity="0.9"/>
   </g>
   
   <!-- Modern Accents -->
