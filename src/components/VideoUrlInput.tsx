@@ -3,6 +3,7 @@ import { Search, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { detectPlatform } from '@/utils/platformDetector';
+import { sanitizeText } from '@/utils/textSanitizer';
 import { cn } from '@/lib/utils';
 
 interface VideoUrlInputProps {
@@ -78,7 +79,7 @@ export function VideoUrlInput({
           <Input
             type="url"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => setUrl(sanitizeText(e.target.value))}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder={placeholder}
