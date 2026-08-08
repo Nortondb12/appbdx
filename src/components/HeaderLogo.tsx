@@ -88,7 +88,7 @@ export const HeaderLogo = () => {
           alt="AVD Pro logo — all video downloader"
           onError={() => setFailed(true)}
           style={{ width: config.size, height: config.size }}
-          className={`relative object-contain transition-all duration-500 cursor-pointer ${hoverClasses[config.hover]}`}
+          className={`relative object-contain transition-all duration-500 cursor-pointer animate-float ${hoverClasses[config.hover]}`}
         />
       )}
 

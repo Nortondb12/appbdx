@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Globe, Youtube, Instagram, Music, Facebook } from "lucide-react";
 
 export type PlatformTab = "all" | "youtube" | "instagram" | "tiktok" | "facebook";
 
@@ -7,12 +8,12 @@ interface PlatformTabsProps {
   onSelectPlatform: (platform: PlatformTab) => void;
 }
 
-const platforms: { id: PlatformTab; name: string; icon: string }[] = [
-  { id: "all", name: "All", icon: "🌐" },
-  { id: "youtube", name: "YouTube", icon: "▶️" },
-  { id: "instagram", name: "Instagram", icon: "📷" },
-  { id: "tiktok", name: "TikTok", icon: "🎵" },
-  { id: "facebook", name: "Facebook", icon: "👤" },
+const platforms: { id: PlatformTab; name: string; icon: React.ReactNode }[] = [
+  { id: "all", name: "All", icon: <Globe className="w-4 h-4" /> },
+  { id: "youtube", name: "YouTube", icon: <Youtube className="w-4 h-4" /> },
+  { id: "instagram", name: "Instagram", icon: <Instagram className="w-4 h-4" /> },
+  { id: "tiktok", name: "TikTok", icon: <Music className="w-4 h-4" /> },
+  { id: "facebook", name: "Facebook", icon: <Facebook className="w-4 h-4" /> },
 ];
 
 export function PlatformTabs({ selectedPlatform, onSelectPlatform }: PlatformTabsProps) {

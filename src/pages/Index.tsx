@@ -165,8 +165,8 @@ const Index = () => {
             <HeaderLogo />
 
             <div className="max-w-3xl">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 leading-[0.9]">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-x drop-shadow-[0_5px_15px_rgba(var(--primary-rgb),0.3)]">
+              <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-[-0.04em] mb-6 leading-[0.85] text-balance">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-x drop-shadow-[0_10px_20px_rgba(var(--primary-rgb),0.2)]">
                   AVD Pro
                 </span>
               </h1>
@@ -188,8 +188,8 @@ const Index = () => {
 
         {/* Centerpiece Input Card */}
         <div className="w-full max-w-2xl mb-16 animate-fade-up-delay-2 perspective-1000">
-          <div className="glass-card rounded-[2.5rem] p-2 md:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-white/5 overflow-hidden group">
-            <div className="bg-background/40 backdrop-blur-md rounded-[2rem] p-6 md:p-10 transition-all duration-500 group-hover:bg-background/60">
+          <div className="glass-card rounded-[3rem] p-2 md:p-3 shadow-[0_30px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.4)] border-white/10 dark:border-white/5 overflow-hidden group hover:shadow-primary/5 transition-all duration-700">
+            <div className="bg-background/40 backdrop-blur-3xl rounded-[2.5rem] p-6 md:p-12 transition-all duration-500 group-hover:bg-background/50">
               <VideoUrlInput
                 onSubmit={handleFetchVideo}
                 isLoading={isLoading}
