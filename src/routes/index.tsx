@@ -1,1 +1,1 @@
-const Index = () => <div>Hi</div>; export default Index;
+const Index = () => <div>Implement URL validation and user-friendly errors for unsupported or invalid video links.</div>; export default Index;
