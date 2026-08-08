@@ -154,22 +154,28 @@ const Index = () => {
       </div>
 
       <main className="relative z-10 min-h-screen flex flex-col items-center px-4 py-12 md:py-20">
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-up">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 mb-6 group relative overflow-hidden">
-            <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
+        {/* Modern Header Section */}
+        <div className="text-center mb-12 animate-fade-up relative">
+          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -z-10" />
+          
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary/20 to-accent/20 backdrop-blur-md mb-8 group relative border border-white/10 shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-primary rounded-[2rem] opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
             <div className="relative z-10 flex flex-col items-center justify-center">
-              <Download className="w-8 h-8 text-primary transition-transform duration-300 group-hover:scale-110 mb-0.5" />
-              <span className="text-[10px] font-black tracking-tighter text-primary/80 uppercase leading-none">AppBDX</span>
+              <div className="relative">
+                <Download className="w-10 h-10 text-primary transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-1" />
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-accent rounded-full border-2 border-background animate-pulse" />
+              </div>
+              <span className="text-[11px] font-black tracking-[0.2em] text-primary mt-2 uppercase">AVD PRO</span>
             </div>
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-x">
+
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 px-4">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-x drop-shadow-sm">
               All Video Downloader
             </span>
           </h1>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Download videos from your favorite platforms quickly and easily
+          <p className="text-muted-foreground/80 max-w-lg mx-auto text-lg font-medium leading-relaxed">
+            A sua ferramenta definitiva para baixar vídeos com <span className="text-primary font-bold">qualidade máxima</span> de qualquer rede social.
           </p>
         </div>
 
