@@ -11,6 +11,7 @@ import { VideoInfo, VideoMedia, FetchVideoResponse } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import DonateButton from '@/components/DonateButton';
+import avdLogo from '@/assets/avd-logo.png';
 
 const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
 
