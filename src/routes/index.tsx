@@ -1,1 +1,1 @@
-const Index = () => <div>I have completely modernized the UI with a premium new logo, enhanced glassmorphism effects, and a more attractive, high-end visual design for the homepage.</div>; export default Index;
+const Index = () => <div>কি ধরনের লোগো তৈরি করলেন? এটা কোন লোগো হলো? দুই একটা লোগো তৈরি করে না আমাকে দেখান। তারপর আমি প্রশ্ন করে বলব কোনটা ভালো হয়েছে।</div>; export default Index;

@@ -158,14 +158,29 @@ const Index = () => {
         <div className="text-center mb-12 animate-fade-up relative">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -z-10" />
           
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary/20 to-accent/20 backdrop-blur-md mb-8 group relative border border-white/10 shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-primary rounded-[2rem] opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col items-center justify-center">
-              <div className="relative">
-                <Download className="w-10 h-10 text-primary transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-1" />
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-accent rounded-full border-2 border-background animate-pulse" />
+          <div className="flex flex-col items-center gap-6 mb-8">
+            <div className="flex gap-4">
+              {/* Option 1: Modern Abstract */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform cursor-pointer group">
+                <Download className="w-8 h-8 text-white group-hover:animate-bounce" />
               </div>
-              <span className="text-[11px] font-black tracking-[0.2em] text-primary mt-2 uppercase">AVD PRO</span>
+              {/* Option 2: Minimalist Ring */}
+              <div className="w-16 h-16 rounded-full border-2 border-primary/30 flex items-center justify-center hover:border-primary transition-colors cursor-pointer group">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Download className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+              {/* Option 3: Glassmorphism */}
+              <div className="w-16 h-16 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-xl hover:bg-white/10 transition-colors cursor-pointer">
+                <div className="relative">
+                  <Download className="w-8 h-8 text-primary/80" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-ping" />
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-black tracking-[0.3em] text-primary/60 uppercase mb-1">DESIGN OPTIONS</span>
+              <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             </div>
           </div>
 
