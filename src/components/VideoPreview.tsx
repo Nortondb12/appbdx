@@ -187,8 +187,9 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
             ) : (
               <span className="flex items-center gap-2">
                 <Download className="w-5 h-5" />
-                Download Video
+                Download {selectedMedia?.quality || selectedMedia?.format || 'Video'}
               </span>
+
             )}
           </Button>
         </div>
