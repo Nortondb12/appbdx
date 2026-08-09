@@ -29,11 +29,27 @@ export function VideoUrlInput({
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (url.trim()) {
-      const platform = detectPlatform(url);
+    const trimmedUrl = url.trim();
+    if (trimmedUrl) {
+      const platform = detectPlatform(trimmedUrl);
       setDetectedPlatform(platform !== 'unknown' ? platform : null);
-      if (platform === 'unknown' && url.length > 5) {
-        setLocalError('Please enter a valid video URL from Facebook, Instagram, YouTube, or TikTok');
+      
+      // Strict URL validation
+      if (trimmedUrl.length > 3) {
+        if (platform === 'unknown') {
+          setLocalError('Unsupported platform. Please use a link from FB, IG, YT, or TikTok.');
+        } else {
+          try {
+            // Check for basic URL structure
+            if (trimmedUrl.includes('.') && !trimmedUrl.startsWith('.')) {
+              setLocalError(null);
+            } else {
+              setLocalError('Please enter a valid URL format.');
+            }
+          } catch (e) {
+            setLocalError('Invalid URL format.');
+          }
+        }
       } else {
         setLocalError(null);
       }
