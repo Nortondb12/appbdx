@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Loader2, Clock, Play, Check } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,19 +23,14 @@ interface VideoPreviewProps {
 export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewProps) {
   const [selectedMedia, setSelectedMedia] = useState<VideoMedia | null>(null);
 
-  // Initialize selectedMedia when video info is first provided
-  useState(() => {
+  // Update selectedMedia when the video info changes
+  useEffect(() => {
     if (video.media && video.media.length > 0) {
       setSelectedMedia(video.media[0]);
+    } else {
+      setSelectedMedia(null);
     }
-  });
-
-  // Also update if the video prop changes (e.g. new fetch)
-  useState(() => {
-    if (video.media && video.media.length > 0) {
-      setSelectedMedia(video.media[0]);
-    }
-  });
+  }, [video]);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
