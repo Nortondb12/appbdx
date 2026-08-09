@@ -107,8 +107,8 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
                 {video.media.length <= 4 ? (
                   /* Radio selector for fewer options */
                   <RadioGroup 
-                    value={selectedMedia ? video.media.indexOf(selectedMedia).toString() : "0"} 
-                    onValueChange={(val) => setSelectedMedia(video.media[parseInt(val)])}
+                    value={selectedMedia ? video.media.indexOf(selectedMedia).toString() : ""} 
+                    onValueChange={(val) => { setSelectedMedia(video.media[parseInt(val)]); setHasSelected(true); }}
                     className="grid grid-cols-2 gap-3"
                   >
                     {video.media.map((media, index) => (
@@ -145,8 +145,8 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
                 ) : (
                   /* Dropdown for many options */
                   <Select
-                    value={selectedMedia ? video.media.indexOf(selectedMedia).toString() : "0"}
-                    onValueChange={(val) => setSelectedMedia(video.media[parseInt(val)])}
+                    value={selectedMedia ? video.media.indexOf(selectedMedia).toString() : undefined}
+                    onValueChange={(val) => { setSelectedMedia(video.media[parseInt(val)]); setHasSelected(true); }}
                   >
                     <SelectTrigger className="w-full h-12 rounded-xl border-2 bg-secondary/30">
                       <SelectValue placeholder="Select quality" />
@@ -176,7 +176,7 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
           {/* Download button */}
           <Button
             onClick={handleDownload}
-            disabled={!selectedMedia || isDownloading}
+            disabled={!hasSelected || !selectedMedia || isDownloading}
             className={cn(
               "mt-5 h-12 text-base font-medium rounded-xl",
               "gradient-btn text-primary-foreground",
@@ -192,7 +192,7 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
             ) : (
               <span className="flex items-center gap-2">
                 <Download className="w-5 h-5" />
-                Download {selectedMedia?.quality || selectedMedia?.format || 'Video'}
+                {selectedMedia ? `Download ${selectedMedia.quality || selectedMedia.format || 'Video'}` : 'Select a quality first'}
               </span>
 
             )}
