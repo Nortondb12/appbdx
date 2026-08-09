@@ -22,14 +22,12 @@ interface VideoPreviewProps {
 
 export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewProps) {
   const [selectedMedia, setSelectedMedia] = useState<VideoMedia | null>(null);
+  const [hasSelected, setHasSelected] = useState(false);
 
-  // Update selectedMedia when the video info changes
+  // Reset selection state when the video info changes (require explicit selection)
   useEffect(() => {
-    if (video.media && video.media.length > 0) {
-      setSelectedMedia(video.media[0]);
-    } else {
-      setSelectedMedia(null);
-    }
+    setSelectedMedia(null);
+    setHasSelected(false);
   }, [video]);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
