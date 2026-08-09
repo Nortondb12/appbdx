@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Loader2, Clock, Play, Check } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,9 +21,16 @@ interface VideoPreviewProps {
 }
 
 export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewProps) {
-  const [selectedMedia, setSelectedMedia] = useState<VideoMedia | null>(
-    video.media[0] || null
-  );
+  const [selectedMedia, setSelectedMedia] = useState<VideoMedia | null>(null);
+
+  // Update selectedMedia when the video info changes
+  useEffect(() => {
+    if (video.media && video.media.length > 0) {
+      setSelectedMedia(video.media[0]);
+    } else {
+      setSelectedMedia(null);
+    }
+  }, [video]);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -102,7 +109,7 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
                 {video.media.length <= 4 ? (
                   /* Radio selector for fewer options */
                   <RadioGroup 
-                    value={video.media.indexOf(selectedMedia! || video.media[0]).toString()} 
+                    value={selectedMedia ? video.media.indexOf(selectedMedia).toString() : "0"} 
                     onValueChange={(val) => setSelectedMedia(video.media[parseInt(val)])}
                     className="grid grid-cols-2 gap-3"
                   >
@@ -140,7 +147,7 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
                 ) : (
                   /* Dropdown for many options */
                   <Select
-                    value={video.media.indexOf(selectedMedia! || video.media[0]).toString()}
+                    value={selectedMedia ? video.media.indexOf(selectedMedia).toString() : "0"}
                     onValueChange={(val) => setSelectedMedia(video.media[parseInt(val)])}
                   >
                     <SelectTrigger className="w-full h-12 rounded-xl border-2 bg-secondary/30">

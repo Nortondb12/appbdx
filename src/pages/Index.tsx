@@ -75,7 +75,7 @@ const Index = () => {
         duration: response.duration,
         platform,
         media: response.media || [],
-        originalUrl: response.originalUrl,
+        originalUrl: response.originalUrl || url,
       });
 
     } catch (err) {
@@ -197,7 +197,7 @@ const Index = () => {
             <div className="bg-background/40 backdrop-blur-3xl rounded-[2.3rem] p-6 md:p-12 transition-all duration-700 group-hover:bg-background/20">
               <VideoUrlInput
                 onSubmit={handleFetchVideo}
-                isLoading={isLoading}
+                isLoading={isLoading || isDownloading}
                 error={error}
                 showRetry={isServiceUnavailable && !!lastAttemptedUrl}
                 onRetry={() => lastAttemptedUrl && handleFetchVideo(lastAttemptedUrl)}
