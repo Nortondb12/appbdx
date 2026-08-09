@@ -153,7 +153,7 @@ export function VideoUrlInput({
         {isLoading ? (
           <span className="flex items-center gap-2">
             <Loader2 className="w-5 h-5 animate-spin" />
-            {isLoading && !url ? "Processing..." : "Processing..."}
+            Processing...
           </span>
         ) : (
           "Download"
