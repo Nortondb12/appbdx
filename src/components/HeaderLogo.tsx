@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import premiumLogo from '@/assets/logo-premium.svg';
+import premiumLogo from '@/assets/logo-appbdx.svg';
 
 type HoverStyle = 'scale' | 'rotate' | 'float' | 'none';
 
