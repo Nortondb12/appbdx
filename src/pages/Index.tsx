@@ -75,7 +75,7 @@ const Index = () => {
         duration: response.duration,
         platform,
         media: response.media || [],
-        originalUrl: response.originalUrl,
+        originalUrl: response.originalUrl || url,
       });
 
     } catch (err) {
