@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import DonateButton from '@/components/DonateButton';
 import { HeaderLogo } from '@/components/HeaderLogo';
+import { AdOverlay } from '@/components/AdOverlay';
 
 const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
 
@@ -32,6 +33,8 @@ const Index = () => {
   const [originalUrl, setOriginalUrl] = useState('');
   const [lastAttemptedUrl, setLastAttemptedUrl] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformTab>('all');
+  const [adOpen, setAdOpen] = useState(false);
+  const [pendingDownloadMedia, setPendingDownloadMedia] = useState<VideoMedia | null>(null);
   
 
   const { history, addToHistory, clearHistory } = useDownloadHistory();
@@ -84,6 +87,11 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDownloadTrigger = (media: VideoMedia) => {
+    setPendingDownloadMedia(media);
+    setAdOpen(true);
   };
 
   const handleDownload = async (media: VideoMedia) => {
@@ -215,7 +223,7 @@ const Index = () => {
             }>
               <VideoPreview
                 video={videoInfo}
-                onDownload={handleDownload}
+                onDownload={handleDownloadTrigger}
                 isDownloading={isDownloading}
               />
             </Suspense>
@@ -241,6 +249,16 @@ const Index = () => {
             For educational purposes only. Respect copyright laws.
           </a>
         </footer>
+
+        <AdOverlay 
+          open={adOpen} 
+          onClose={() => setAdOpen(false)}
+          onAdComplete={() => {
+            if (pendingDownloadMedia) {
+              handleDownload(pendingDownloadMedia);
+            }
+          }}
+        />
       </main>
     </div>
   );
