@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { VideoUrlInput } from '@/components/VideoUrlInput';
 import { ThemeToggle } from '@/components/ThemeToggle';
