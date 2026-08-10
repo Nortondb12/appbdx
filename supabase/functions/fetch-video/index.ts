@@ -13,7 +13,30 @@ serve(async (req) => {
   }
 
   try {
+    const clientIP = req.headers.get("x-forwarded-for") || "anonymous";
     const { url, download, videoId, format, platform } = await req.json();
+
+    // Implement rate limiting: 10 requests per minute per IP
+    const rateLimit = checkRateLimit(clientIP, { windowMs: 60000, max: 10 });
+    
+    if (!rateLimit.success) {
+      console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ 
+          status: false, 
+          error: "Too many requests. Please slow down and try again in a minute." 
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": Math.ceil((rateLimit.resetTime - Date.now()) / 1000).toString()
+          } 
+        }
+      );
+    }
+
 
     const apiToken = Deno.env.get("FASTSAVER_API_KEY");
 
