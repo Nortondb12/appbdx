@@ -1,33 +1,26 @@
-# Plan: AppBDX Performance and Resilience Upgrade
+# Project Plan - Video Fetching Integration
 
-This plan addresses several pending technical improvements to make the video downloader more robust and maintainable.
+The goal is to ensure the input field is correctly wired to call the `fetch-video` backend function and that the results (thumbnail, title, and quality options) are displayed to the user for final selection.
 
 ## Proposed Changes
 
-### 1. Backend Health Monitoring
-- **Action:** Create a new Edge Function (or update existing) to provide a `/health` status.
-- **Action:** Update `src/pages/Index.tsx` to check backend health on mount and display a subtle "System Status" indicator if the backend is unreachable.
+### 1. Verification of Existing Wiring
+- I have reviewed `src/pages/Index.tsx` and confirmed it already calls `supabase.functions.invoke('fetch-video')` in the `handleFetchVideo` function.
+- I have confirmed `src/components/VideoPreview.tsx` already handles displaying `video.title`, `video.thumbnail`, and `video.media` (quality options).
+- The "Download Video" button logic has been confirmed to require a selection before enabling.
 
-### 2. Enhanced Logging & Traceability
-- **Action:** Implement correlation ID generation in the frontend for every fetch/download request.
-- **Action:** Update Supabase Edge Functions to accept and log this correlation ID, making it easier to trace errors across the stack.
+### 2. UI/UX Refinements (if needed)
+- Ensure the transition between the input and the preview is smooth.
+- Verify that error states from the backend are clearly displayed.
 
-### 3. UI Resilience (Error Boundaries)
-- **Action:** Implement a global `ErrorBoundary` component in `src/components/ErrorBoundary.tsx`.
-- **Action:** Wrap the `VideoPreview` and main `Index` layout with Error Boundaries to prevent full-page blank screens during runtime crashes.
+### 3. Validation
+- Use Playwright to simulate a user pasting a URL and clicking fetch.
+- Verify that the thumbnail and quality options appear.
 
-### 4. Strict Download Validation
-- **Action:** Update `src/components/VideoPreview.tsx` logic to ensure the "Download" button is only enabled when valid media objects and selected quality are confirmed.
+## User Review Required
 
-### 5. Unicode Cleanup (Ongoing)
-- **Action:** Continue monitoring for and removing any invisible characters like `\u2063` during component updates.
+> [!IMPORTANT]
+> The codebase already contains the logic to wire the input to `POST /fetch` (via Supabase edge functions) and display the results. Would you like me to perform a live validation test to ensure everything is working correctly with the actual backend, or are there specific UI tweaks you'd like to see in how the title/thumbnail/qualities are displayed?
 
-## Validation Plan
-
-### Automated Verification
-- Verify that the `/health` endpoint returns a 200 OK status.
-- Check browser console for correlation IDs in outgoing requests.
-
-### Manual Verification
-- Simulate a backend failure (e.g., by changing the function name) to see the "System Offline" UI state.
-- Trigger a mock error in `VideoPreview` to verify the Error Boundary displays a friendly fallback.
+- [ ] Run validation tests
+- [ ] Implement specific UI refinements (please specify)
