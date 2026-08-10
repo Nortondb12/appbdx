@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import DonateButton from '@/components/DonateButton';
 import { HeaderLogo } from '@/components/HeaderLogo';
 import { AdOverlay } from '@/components/AdOverlay';
+import { CookieConsent } from '@/components/CookieConsent';
 
 const VideoPreview = lazy(() => import('@/components/VideoPreview').then(m => ({ default: m.VideoPreview })));
 
@@ -259,6 +260,10 @@ const Index = () => {
             }
           }}
         />
+
+        <CookieConsent onAccept={() => {
+          console.log("Global consent granted");
+        }} />
       </main>
     </div>
   );
