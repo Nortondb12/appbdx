@@ -7,7 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { CookieConsent } from './CookieConsent';
 
 interface AdOverlayProps {
   open: boolean;
