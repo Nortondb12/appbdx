@@ -1,1 +1,1 @@
-const Index = () => <div>Create a visually appealing and mobile-responsive pop-up for the donation love icon, located in the top-left corner of the page. Integrate a beautiful and smooth animation for its appearance and disappearance.</div>; export default Index;
+const Index = () => <div>Hi</div>; export default Index;
