@@ -262,8 +262,7 @@ const Index = () => {
         />
 
         <CookieConsent onAccept={() => {
-          // Optional: triggered when user clicks accept in the banner
-          console.log("Consent granted");
+          console.log("Global consent granted");
         }} />
       </main>
     </div>
