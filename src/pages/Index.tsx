@@ -25,6 +25,23 @@ const platformPlaceholders: Record<PlatformTab, string> = {
   facebook: "Paste Facebook video link...",
 };
 
+function friendlyApiError(raw: string): string {
+  const msg = (raw || '').toLowerCase();
+  if (msg.includes('429') || msg.includes('rate limit') || msg.includes('too many')) {
+    return 'Too many requests right now. Please wait a moment and try again.';
+  }
+  if (msg.includes('private') || msg.includes('login') || msg.includes('403')) {
+    return 'This video looks private or restricted, so it can\'t be downloaded.';
+  }
+  if (msg.includes('not found') || msg.includes('404')) {
+    return 'We couldn\'t find that video. Double-check the link and try again.';
+  }
+  if (msg.includes('timeout') || msg.includes('network') || msg.includes('fetch failed')) {
+    return 'The download service took too long to respond. Please try again.';
+  }
+  return 'The download service is temporarily unavailable. Please try again in a few seconds.';
+}
+
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
