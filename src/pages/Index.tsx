@@ -25,6 +25,23 @@ const platformPlaceholders: Record<PlatformTab, string> = {
   facebook: "Paste Facebook video link...",
 };
 
+function friendlyApiError(raw: string): string {
+  const msg = (raw || '').toLowerCase();
+  if (msg.includes('429') || msg.includes('rate limit') || msg.includes('too many')) {
+    return 'Too many requests right now. Please wait a moment and try again.';
+  }
+  if (msg.includes('private') || msg.includes('login') || msg.includes('403')) {
+    return 'This video looks private or restricted, so it can\'t be downloaded.';
+  }
+  if (msg.includes('not found') || msg.includes('404')) {
+    return 'We couldn\'t find that video. Double-check the link and try again.';
+  }
+  if (msg.includes('timeout') || msg.includes('network') || msg.includes('fetch failed')) {
+    return 'The download service took too long to respond. Please try again.';
+  }
+  return 'The download service is temporarily unavailable. Please try again in a few seconds.';
+}
+
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -47,8 +64,23 @@ const Index = () => {
     setOriginalUrl(url);
     setLastAttemptedUrl(url);
 
-    if (!isValidVideoUrl(url)) {
-      setError('Please enter a valid video URL from Facebook, Instagram, YouTube, or TikTok');
+    const trimmed = url.trim();
+
+    // 1. Invalid URL format
+    let isUrl = true;
+    try {
+      new URL(trimmed);
+    } catch {
+      isUrl = false;
+    }
+    if (!isUrl) {
+      setError("That doesn't look like a valid link. Paste a full video URL starting with https://");
+      return;
+    }
+
+    // 2. Unsupported platform
+    if (detectPlatform(trimmed) === 'unknown' || !isValidVideoUrl(trimmed)) {
+      setError('This platform isn\'t supported yet. We currently support YouTube, Facebook, Instagram and TikTok links.');
       return;
     }
 
@@ -56,7 +88,7 @@ const Index = () => {
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('fetch-video', {
-        body: { url },
+        body: { url: trimmed },
       });
 
       if (fnError) {
@@ -66,25 +98,33 @@ const Index = () => {
       const response = data as FetchVideoResponse & { isServiceUnavailable?: boolean };
 
       if (!response.status) {
-        setError(response.error || 'Failed to fetch video information');
-        setIsServiceUnavailable(response.isServiceUnavailable || false);
+        const raw = response.error || '';
+        setError(friendlyApiError(raw));
+        setIsServiceUnavailable(response.isServiceUnavailable || true);
         return;
       }
 
-      const platform = detectPlatform(url);
-      
+      const platform = detectPlatform(trimmed);
+      const media = response.media || [];
+
+      if (media.length === 0) {
+        setError('We found the post, but no downloadable video was available. It may be private, age-restricted or removed.');
+        return;
+      }
+
       setVideoInfo({
         title: response.title || 'Untitled Video',
         thumbnail: response.thumbnail || '/placeholder.svg',
         duration: response.duration,
         platform,
-        media: response.media || [],
-        originalUrl: response.originalUrl || url,
+        media,
+        originalUrl: response.originalUrl || trimmed,
       });
 
     } catch (err) {
       console.error('Error fetching video:', err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(friendlyApiError(err instanceof Error ? err.message : ''));
+      setIsServiceUnavailable(true);
     } finally {
       setIsLoading(false);
     }
