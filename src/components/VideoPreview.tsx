@@ -192,7 +192,7 @@ export function VideoPreview({ video, onDownload, isDownloading }: VideoPreviewP
             ) : (
               <span className="flex items-center gap-2">
                 <Download className="w-5 h-5" />
-                {selectedMedia ? `Download ${selectedMedia.quality || selectedMedia.format || 'Video'}` : 'Select a quality first'}
+                {selectedMedia ? `Download ${selectedMedia.quality || selectedMedia.format || 'Video'}` : 'Select quality to download'}
               </span>
 
             )}
