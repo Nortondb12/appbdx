@@ -144,12 +144,18 @@ const Index = () => {
       let downloadUrl = media.url;
 
       if (!media.url && videoInfo.originalUrl) {
+        const selectedFormat = media.quality || media.format;
+
+        if (!selectedFormat) {
+          throw new Error('The selected quality is no longer available. Please choose another option.');
+        }
+
         const { data, error: fnError } = await supabase.functions.invoke('fetch-video', {
           body: { 
             download: true,
             url: videoInfo.originalUrl,
-            format: media.quality,
-            platform: 'youtube',
+            format: selectedFormat,
+            platform: videoInfo.platform,
           },
         });
 

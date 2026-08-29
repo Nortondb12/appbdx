@@ -162,16 +162,10 @@ serve(async (req) => {
               );
             }
             
+            // Never return a different quality than the one explicitly selected.
+            // The caller can retry with another option if this exact quality is unavailable.
             if (combinedFormats.length > 0) {
-              combinedFormats.sort((a: any, b: any) => {
-                const qualityA = parseInt(a.qualityLabel?.replace(/\D/g, '') || "0");
-                const qualityB = parseInt(b.qualityLabel?.replace(/\D/g, '') || "0");
-                return qualityB - qualityA;
-              });
-              return new Response(
-                JSON.stringify({ status: true, downloadUrl: combinedFormats[0].url }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-              );
+              throw new Error(`The selected quality (${format}) is unavailable`);
             }
           }
           
